@@ -13,6 +13,7 @@ android常用的知识点，需要大家逐步掌握：
    Memory Monitor，Allocation Tracking
    Heap Tool，TraceView
    hierarchyViewer
+   Systrace
 11.电量优化
    分析电量流失
    分析电量消耗数据

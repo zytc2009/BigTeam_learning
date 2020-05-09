@@ -1,0 +1,46 @@
+android常用的知识点，需要大家逐步掌握：
+1.自定义View，Holder
+2.MVP模式
+3.CoordinatorLayout
+4.CollapsingToolbarLayout
+5.自定义Befavior
+6.OpenCv 身份证识别，TensorFlow
+7.WebSocket
+8.AOP架构设计
+9.Dagger架构设计
+10.内存优化
+   Mat，LeakCannray
+   Memory Monitor，Allocation Tracking
+   Heap Tool，TraceView
+   hierarchyViewer
+11.电量优化
+   分析电量流失
+   分析电量消耗数据
+   battery-hisorian工具使用
+   窝信号对电量消耗
+   job Schedule
+12.网络优化
+   Batching批处理
+   Prefetching预期   
+13.多线程并发
+14.AIDL
+15.穷举，贪心，分治，动态规划，回溯
+16.自己实现多线程，线程池
+17.AES加密
+18.第三方：OkHttp，支付，EventBus，登陆分享，Retrofit+Rxjava
+19.沉浸式体验
+20.热修复
+21.动画：常用动画，属性动画
+22.个性化推送
+23.插件化
+24.自动化打包
+25.数据库升级维护
+26.事件分发机制
+27.网络请求的流程
+28.View 绘制流程
+29.Touch事件传递流程
+30.Glide源码分析
+31.布局优化
+32.一个APP从启动到主页面显示经历了哪些过程
+33.
+   

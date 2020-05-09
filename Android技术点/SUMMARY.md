@@ -12,7 +12,7 @@
 
 ##### 		（1）volatile和synchronize原理
 
-​                <https://blog.csdn.net/congyihao/article/details/60748271>
+​        <https://blog.csdn.net/congyihao/article/details/60748271>
 
 #####         	（2）Thread和线程池
 
@@ -26,7 +26,7 @@
 
 #####      						（1）优化工具
 
-#####            							Analyze APK
+#####            								Analyze APK
 
 #### 			2）gradle使用及优化
 
@@ -62,7 +62,7 @@
 
 #### 			1）DroidPlugin原理
 
-​                <https://blog.csdn.net/hejjunlin/article/details/52258434>
+​        https://blog.csdn.net/hejjunlin/article/details/52258434
 
 #### 			2）RePlugin原理
 

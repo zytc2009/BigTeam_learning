@@ -1,0 +1,135 @@
+# Kotlin For Android 培训计划
+
+[TOC]
+
+## 前言
+
+为什么选择 Kotlin？
+
+### kotlin 已成为开发Android官方语言
+
+
+### 简洁
+
+大大减少样板代码的数量
+
+```
+ /*
+ 使用一行代码创建一个包含 getters、 setters、 `equals()`、 `hashCode()`、 `toString()` 以及 `copy()` 的 POJO：
+*/
+​
+data class Customer(val name: String, val email: String, val company: String)
+​
+// 或者使用 lambda 表达式来过滤列表：
+​
+val positiveNumbers = list.filter { it > 0 }
+​
+// 想要单例？创建一个 object 就可以了：
+​
+object ThisIsASingleton {
+    val companyName: String = "JetBrains"
+}
+
+```
+
+### 安全
+
+避免空指针异常等整个类的错误
+
+```
+xxxxxxxxxx
+ /*
+ 彻底告别那些烦人的 NullPointerException——著名的十亿美金的错误
+*/
+​
+var output: String
+output = null   // 编译错误
+​
+// Kotlin 可以保护你避免对可空类型进行误操作
+​
+val name: String? = null    // 可空类型
+println(name.length())      // 编译错误
+​
+// 并且如果类型检测正确，编译器会为你做自动类型转换
+​
+fun calculateTotal(obj: Any) {
+    if (obj is Invoice)
+        obj.calculateTotal()
+}
+
+```
+
+### 互操作性
+
+充分利用 JVM、Android 和浏览器的现有库
+
+```
+/*
+ 使用 JVM 上的任何现有库，因为有 100％ 的兼容性，包括 SAM 支持。
+*/
+
+import io.reactivex.Flowable
+import io.reactivex.schedulers.Schedulers
+
+Flowable
+    .fromCallable {
+        Thread.sleep(1000) //  模仿高开销的计算
+        "Done"
+    }
+    .subscribeOn(Schedulers.io())
+    .observeOn(Schedulers.single())
+    .subscribe(::println, Throwable::printStackTrace)
+```
+
+```
+// 无论是面向 JVM 还是 JavaScript 平台，都可用 Kotlin 写代码然后部署到你想要的地方
+
+import kotlin.browser.window
+
+fun onLoad() {
+    window.document.body!!.innerHTML += "<br/>Hello, Kotlin!"
+}
+```
+
+### 工具友好
+
+可用任何 Java IDE 或者使用命令行构建
+
+![IDE工具](8885D3C5CAC64FD0A0F2A33841719CDB)
+
+
+以上来源于 kotlin 官网
+https://www.kotlincn.net/
+
+https://github.com/JetBrains/kotlin
+
+
+
+## 计划
+
+### Kotlin 基础讲解
+
+
+####  Kotlin Android 开发环境搭建
+####  Kotlin-基本数据类型及使用
+####  Kotlin-基础语法和使用
+####  Kotlin-条件控制-循环
+####  Kotlin-面向对象
+####  Kotlin-抽象与继承
+####  Kotlin-面向接口
+####  Kotlin-枚举
+
+
+
+### kotlin进阶
+
+#### kotlin-扩展
+#### kotlin-泛型
+#### kotlin-委托
+
+
+### 持续更新 
+
+
+
+

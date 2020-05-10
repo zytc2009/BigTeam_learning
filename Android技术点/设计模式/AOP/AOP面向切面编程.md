@@ -36,7 +36,7 @@ AOP的目标是把这些横跨并嵌入众多模块里的功能（如监控每�
 - DexMaker: Dalvik 虚拟机上，在编译期或者运行时生成代码的 Java API。
 - ASMDEX: 一个类似 ASM 的字节码操作库，运行在Android平台，操作Dex字节码。
 - 
-本篇的主角就是AspectJ，下面就来看看AspectJ方式的AOP如何在Android开发中进行使用吧。
+  本篇的主角就是AspectJ，下面就来看看AspectJ方式的AOP如何在Android开发中进行使用吧。
 
 # Android中使用AspectJ
 代表项目：Hugo(打印每个方法的执行时间) sa-sdk-android（全埋点技术）。
@@ -61,7 +61,7 @@ weaver织入器：为了在java编译器上使用AspectJ而不依赖于Ajc编译
 - 异常通知（AfterThrowing）、
 - 最终通知（After）
 - 环绕通知（Around）5种。
-在实际应用中通常是切面类中的一个方法，具体属于哪类通知由配置指定的。
+  在实际应用中通常是切面类中的一个方法，具体属于哪类通知由配置指定的。
 
 ▍**切入点（Pointcut）**：用于定义通知应该切入到哪些连接点上。不同的通知通常需要切入到不同的连接点上，这种精准的匹配是由切入点的正则表达式来定义的。 连接点（JoinPoint）：就是程序在运行过程中能够插入切面的地点。例如，方法调用、异常抛出或字段修改等。
 
@@ -193,10 +193,6 @@ dependencies {
 
 这里提供了下载地址方便大家下载使用
 [aspectj-1.8.10](https://www.eclipse.org/downloads/download.php?file=/tools/aspectj/aspectj-1.8.10.jar)
-
-
-
-
 
 
 # AOP 实践

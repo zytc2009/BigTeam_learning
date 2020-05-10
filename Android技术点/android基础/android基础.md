@@ -1,3 +1,7 @@
+###android基础
+
+[TOC]
+
 #### Application生命周期
 
 > Android程序启动后的第一个入口点是Application的onCreate();
@@ -12,7 +16,7 @@
 >
 > onTerminate():Application结束的时候会调用,由系统决定调用的时机
 
-#### Android Activity生命周期
+#### Activity生命周期
 
 > onCreate - onStart - onResume - onPause - onStop - onRestart - onDestroy 
 >

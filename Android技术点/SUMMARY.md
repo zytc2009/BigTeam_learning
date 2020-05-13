@@ -210,39 +210,45 @@
 
 ​	[Android SQLite的使用入门](android基础/android基础.md)
 
+
+
 ### 2、开发工具
 
-#### 					1）studio使用优化
+#### 						1）studio使用优化
 
-#####      									（1）优化工具
+#####      										（1）优化工具
 
-#####            												Analyze APK
+#####            														Analyze APK
 
-#### 					2）gradle使用及优化
+#### 						2）gradle使用及优化
 
-#### 					3）git使用
+#### 						3）git使用
+
+
 
 ### 3、Android高级
 
-#### 					1）studio使用优化
-#### 					2）apk瘦包
+#### 						1）studio使用优化
+#### 						2）apk瘦包
 
-#### 	3）[异常分析优化](android高级/异常分析优化.md)
+#### 		3）[异常分析优化](android高级/异常分析优化.md)
 
 ### 4、卡顿优化
 ​     	https://juejin.im/post/5e41fb7de51d4526c80e9108#heading-2
-####     					1）卡顿优化分析方法与工具
-####     					2）自动化卡顿检测方案及优化
+####     						1）卡顿优化分析方法与工具
+####     						2）自动化卡顿检测方案及优化
 
 ### 5、性能优化
 
-####  						1）启动优化 <https://juejin.im/post/5e6f18a951882549422ef333>
+####  							1）启动优化 <https://juejin.im/post/5e6f18a951882549422ef333>
 
-#### 						2）性能优化工具：TraceView、Systrace、调试GPU过度绘制 & GPU呈现模式分析、Hierarchy Viewer、MAT、Memory Monitor & Heap Viewer & Allocation Tracker、LeakCanary、Lint。
+#### 							2）性能优化工具：TraceView、Systrace、调试GPU过度绘制 & GPU呈现模式分析、Hierarchy Viewer、MAT、Memory Monitor & Heap Viewer & Allocation Tracker、LeakCanary、Lint。
 
 ### 6、内存检测和优化
 
 ### 7、电量分析和优化
+
+### 8、[常见错误分析和处理](常见错误处理.md)
 
 
 
@@ -271,9 +277,9 @@
 
 ### 2.组件化
 
-#### 			1）JITPack
+#### 				1）JITPack
 
-####			2）Arouter
+####				2）Arouter
 
 
 

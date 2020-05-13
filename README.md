@@ -58,9 +58,18 @@
 
 
 
-**我们是一群对技术追求极致的研发，欢迎有兴趣和时间的同学加入，和我们一起学习！！！ 邮箱：landuochong@163.com**
+------
 
-我们会不断整理并深挖android相关的技术点，针对这些技术点写一些例子。欢迎大家多给一些意见和建议！！
+### [关于我们](关于我们/关于我们.md)
 
-**团队介绍** ： [王洪宾](关于我们/王洪宾.md)  李瑞朋  王丽云  史守锋  马泽佳
+加入我们：landuochong@163.com
 
+### License
+
+Copyright 2018 BigAndroid & zytc
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+
+<http://www.apache.org/licenses/LICENSE-2.0>
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.

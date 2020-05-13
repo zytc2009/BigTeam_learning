@@ -265,4 +265,14 @@
 
 ## 六、Kotlin学习
 
+​	[kotlin分享计划](kotlin/培训计划.md)
+
+​        kotlin第一期:
+
+​		[环境搭建](kotlin/第一期/环境搭建.md)， [基本语法](kotlin/第一期/Kotlin-基本语法及使用.md)， [属性和字段](kotlin/第一期/Kotlin-属性与字段详解.md)， [函数](kotlin/第一期/Kotlin-函数详解.md)， [导包](kotlin/第一期/Kotlin-导包说明.md)
+
+​        kotlin第二期:		
+
+​	kotlin第三期:
+
 ## 七、Flutter学习

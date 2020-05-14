@@ -2,9 +2,21 @@
 
 ## 一、Java基础：
 
-1、容器：HashMap，HashSet，LinkedList
+#### 1）[基础知识](../../Android技术点/java基础/java基础.md)
 
-​     线程是否安全，扩容策略
+#### 2）[异常处理](../../Android技术点/java基础/Java异常.md)
+
+#### 3）[容器](../../Android技术点/java基础/容器.md)
+
+#### 4）[线程](../../Android技术点/java基础/线程.md)
+
+#### 5) [泛型](../../Android技术点/java基础/java泛型.md)
+
+#### 6) [java反射](../../Android技术点/java基础/java反射.md)
+
+#### 7）[java注解](../../Android技术点/java基础/java注解.md)
+
+1、容器：HashMap，HashSet，LinkedList
 
 ​     自己写一个LinkedList
 
@@ -14,15 +26,11 @@
 
 4、类加载的过程
 
-5、反射
-
-6、多线程，线程池
-
 ## 二、Andorid知识点：
 
-[基础知识点](android基础.md)
+[android基础知识点](../../Android技术点/android基础/android基础知识点.md)
 
-[Android高级](Android高级.md)
+[android高级知识点](../../Android技术点/android高级/Android高级知识点.md)
 
 ## 三、Android 底层原理
 

@@ -1,10 +1,3 @@
-
-[TOC]
-
-## 整理中，整理完就会删除（whb）
-
-### Android高阶
-
 #### AIDL
 
 > 1. 定义 AIDL 是 android Interface Dialog Launguage , 是一个android 接口 对话语言。

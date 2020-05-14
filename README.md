@@ -1,56 +1,51 @@
-# android知识点整理
+# 知识库整理
 
 ## 一、管理文档
 
-​	1. [开发手册](管理文档/1.开发手册.md)
+​	1. [如何提升学习效率](管理文档/1.如何提升学习效率.md)
 
-​	2. [git使用流程和规范](管理文档/2.git使用流程和规范.md)
+​	2. [git使用流程和规范](管理文档/git使用流程和规范.md)
 
-​	3. [Android 编码规范](管理文档/3.Android编码规范.md)
+​	3. [Markdown常用语法](管理文档/Markdown常用语法.md)
 
-​	4. [开发注意事项](管理文档/4.开发注意事项.md)
+## 二、计算机基础
 
-​	5.[如何提升学习效率](管理文档/5.如何提升学习效率.md)
 
-​        规范文档：
 
-​		[AndroidStudio日常开发实用技巧](管理文档/规范文档/AndroidStudio日常开发实用技巧.md)
+## 三、大前端
 
-​		[Android代码规范文档](管理文档/规范文档/Android代码规范文档.md)
+​	[android知识点整理](Android技术点/SUMMARY.md)
 
-​		[Android开发注意事项](管理文档/规范文档/Android开发注意事项.md)
+​	ios知识点整理
 
-​		[Markdown常用语法](管理文档/规范文档/Markdown常用语法.md)
+​	Web知识点整理
 
-​		[项目设计文档规范](管理文档/规范文档/项目设计文档规范.md)
+​	小程序学习整理
 
-​		[项目设计文档结构](管理文档/规范文档/项目设计文档结构.md)
+## 四、人工智能、大数据知识点
 
-​		[阿里巴巴Android规范文档](管理文档/规范文档/阿里巴巴Android规范文档.pdf)
 
-## 二、Android知识点
 
-​	[android知识图谱整理](Android技术点/SUMMARY.md)
 
-## 三、算法
+## 五、算法
 
 ​	[开发常用的算法（暂时先列了题目，期待你的完善。。）](算法/常用算法.md)
 
-## 四、推荐博客和文章、书籍
+## 六、推荐博客和文章、书籍
 
 ​	[推荐博客，欢迎推荐和自荐](推荐博客和文章/推荐文章.md)
 
 ​	[推荐书籍](推荐博客和文章/推荐书籍和课程.md)
 
-## 五、待整理的资料
+## 七、待整理的资料
 
 ​       还未整理完的资料
 
-## 六、面试题
+## 八、面试题
 
 ​      [面试题(持续更新中)](面试题/面试.md)
 
-## 七、学习计划和总结
+## 九、学习计划和总结
 
 ​	[学习计划](学习计划.md)
 
@@ -58,9 +53,32 @@
 
 
 
-**我们是一群对技术追求极致的研发，欢迎有兴趣和时间的同学加入，和我们一起学习！！！ 邮箱：landuochong@163.com**
+------
 
-我们会不断整理并深挖android相关的技术点，针对这些技术点写一些例子。欢迎大家多给一些意见和建议！！
+### [关于我们](关于我们/关于我们.md)
 
-**团队介绍** ： [王洪宾](关于我们/王洪宾.md)  李瑞朋  王丽云  史守锋  马泽佳
+技术交流群：
 
+#### QQ群
+
+​	android技术交流：198581062
+
+​	人工智能：278253494
+
+#### 微信群
+
+> **微信群如果不能扫码加入，想进微信群的朋友们，加我微信拉你进群。**
+
+ <img src="./关于我们/微信群.jpg" width="300" alt="图片名称"/>
+
+
+
+### License
+
+Copyright 2018 BigAndroid & zytc
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+
+<http://www.apache.org/licenses/LICENSE-2.0>
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.

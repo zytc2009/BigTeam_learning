@@ -16,6 +16,14 @@
 
 #### 7）[java注解](../../Android技术点/java基础/java注解.md)
 
+[不可不说的Java“锁”事](https://tech.meituan.com/2018/11/15/java-lock.html)
+
+[Java线程池实现原理及其在美团业务中的实践](https://tech.meituan.com/2020/04/02/java-pooling-pratice-in-meituan.html)
+
+[从ReentrantLock的实现看AQS的原理及应用](https://tech.meituan.com/2019/12/05/aqs-theory-and-apply.html)
+
+
+
 1、容器：HashMap，HashSet，LinkedList
 
 ​     自己写一个LinkedList
@@ -26,11 +34,17 @@
 
 4、类加载的过程
 
+
+
 ## 二、Andorid知识点：
 
 [android基础知识点](../../Android技术点/android基础/android基础知识点.md)
 
 [android高级知识点](../../Android技术点/android高级/Android高级知识点.md)
+
+[Google Breakpad Android 使用详解](https://www.jianshu.com/p/1687c92efb89)
+
+
 
 ## 三、Android 底层原理
 
@@ -46,6 +60,8 @@
 
 6、Android图像显示相关流程，VSync信号，SurfaceFlinger到FrameBuffer
 
+
+
 ## 四、第三方框架
 
 1、Glide源码介绍
@@ -56,9 +72,13 @@
 
 4、ARouter源码原理
 
+
+
 ## 五、插件化和组件化
 
    了解不同插件机制主要原理和流派，还有优缺点和局限性。
+
+
 
 ## 六、算法与数据结构
 

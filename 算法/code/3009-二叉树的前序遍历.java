@@ -11,6 +11,11 @@ class Solution {
 
     private List<Integer> result;
 
+    /**
+     * 递归方式
+     * @param root
+     * @return
+     */
     public List<Integer> preorderTraversal(TreeNode root) {
         if(result == null){
             result = new ArrayList<>();
@@ -27,4 +32,37 @@ class Solution {
         }
         return result;
     }
+
+    /**
+     * 非递归
+     * @param root
+     * @return
+     */
+    public List<Integer> preorderTraversal2(TreeNode root) {
+        if(result == null){
+            result = new ArrayList<>();
+        }
+        if(root == null){
+            return result;
+        }
+
+        Stack<TreeNode> stack = new Stack<>();
+
+        while (root != null || !stack.isEmpty()){
+
+            while (root != null){
+                result.add(root.val);
+                stack.push(root);
+                root = root.left;
+            }
+
+            if(!stack.isEmpty()){
+                root = stack.pop();
+                root = root.right;
+            }
+        }
+
+        return result;
+    }
+
 }

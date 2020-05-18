@@ -116,9 +116,11 @@
 
 ### 2.组件化
 
-#### 				1）JITPack
+#### 				1）LiveDataBus
 
 ####				2）Arouter
+
+#### 3）JetPack
 
 
 

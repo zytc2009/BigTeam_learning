@@ -16,7 +16,7 @@
 
 格式：
 
-[时间]:[模块名称]：[开发者姓名]：[目的]
+[时间]:模块名称：开发者姓名：目的
 
 ```
 // TODO: created by **开发者名称 自己替换**: $date$ 模块名称：$moduleName$  目的：$content$
@@ -24,8 +24,7 @@
 
 使用方式:
 
-![修改todo](CBAEC3AF7E484E44B57AAFF0B19521BD)
-
+![修改todo](../images/修改todo.gif)
 
 **TODO删除规范**
 
@@ -58,7 +57,7 @@
 
 使用示例：
 
-![重点代码提示](19E94CA651814E6AA56998CF3E2B532F)
+![重点代码提示](../images/重点代码提示.gif)
 
 
 
@@ -70,7 +69,7 @@
 
 添加示例：
 
-![添加live_temp](FCB45AE52E704C9FB5BED5BF3CEE05F5)
+![添加live_temp](../images/添加live_temp.gif)
 
 **快速创建注释**
 

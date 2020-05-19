@@ -44,11 +44,11 @@
 
 #### 							1）studio使用优化
 
-​    [AndroidStudio日常开发实用技巧](管理文档/规范文档/AndroidStudio日常开发实用技巧.md)
+​    [AndroidStudio日常开发实用技巧](studio优化/AndroidStudio日常开发实用技巧.md)
 
 #####      											（1）优化工具
 
-#####            																		Analyze APK
+#####            																			Analyze APK
 
 #### 							2）gradle使用及优化
 
@@ -76,7 +76,9 @@
 
 ####  								1）启动优化 <https://juejin.im/post/5e6f18a951882549422ef333>
 
-#### 								2）性能优化工具：TraceView、Systrace、调试GPU过度绘制 & GPU呈现模式分析、Hierarchy Viewer、MAT、Memory Monitor & Heap Viewer & Allocation Tracker、LeakCanary、Lint。
+#### 2) [UI优化总结](ui优化/UI优化.md)
+
+#### 								3）性能优化工具：TraceView、Systrace、调试GPU过度绘制 & GPU呈现模式分析、Hierarchy Viewer、MAT、Memory Monitor & Heap Viewer & Allocation Tracker、LeakCanary、Lint。
 
 
 
@@ -118,7 +120,7 @@
 
  [组件化框架设计和实践](组件化和插件/组件化框架设计和实践.md)
 
-####  JetPack
+####  3.JetPack
 
 
 

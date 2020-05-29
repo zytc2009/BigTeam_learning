@@ -128,6 +128,12 @@
 
 ### 2.组件化
 
+ [组件化分享(一期)](组件化和插件/组件化分享(一期).md)
+
+ [ARouter流程分析](ARouter流程分析/ARouter流程分析.md)
+
+ [组件消息总线modular-event](组件化和插件/modular-event.md)
+
  [组件化框架设计和实践](组件化和插件/组件化框架设计和实践.md)
 
 ####  3.JetPack

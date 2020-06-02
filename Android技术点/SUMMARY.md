@@ -2,7 +2,7 @@
 
 ## Android 知识图谱
 
- <img src="./images/Android知识体系图谱.png" width="750" alt="图片名称"/>
+ <img src="./images/Android知识体系图谱.png" width="600" alt="图片名称"/>
 
 
 ## 规范文档：

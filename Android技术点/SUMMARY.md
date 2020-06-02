@@ -1,5 +1,8 @@
 # Android知识点
 
+## Android 知识图谱
+
+ <img src="./images/Android知识体系图谱.png" width="600" alt="图片名称"/>
 
 
 ## 规范文档：
@@ -52,6 +55,8 @@
 
 #### 							2）gradle使用及优化
 
+
+
 #### 							3）git使用
 
 
@@ -66,19 +71,24 @@
 
 
 ### 4、卡顿优化
-​     	https://juejin.im/post/5e41fb7de51d4526c80e9108#heading-2
 ####     							1）卡顿优化分析方法与工具
 ####     							2）自动化卡顿检测方案及优化
+
+[深入探索Android卡顿优化-(上)](https://juejin.im/post/5e41fb7de51d4526c80e9108)
+
+[深入探索Android卡顿优化-(下)](https://juejin.im/post/5e49fc29e51d4526d326b056)
 
 
 
 ### 5、性能优化
 
-####  								1）启动优化 <https://juejin.im/post/5e6f18a951882549422ef333>
+1）[Android启动速度优化](https://juejin.im/post/5e6f18a951882549422ef333)
 
-#### 2) [UI优化总结](ui优化/UI优化.md)
+2 )  [UI优化总结](ui优化/UI优化.md)
 
-#### 								3）性能优化工具：TraceView、Systrace、调试GPU过度绘制 & GPU呈现模式分析、Hierarchy Viewer、MAT、Memory Monitor & Heap Viewer & Allocation Tracker、LeakCanary、Lint。
+3）性能优化工具：TraceView、Systrace、调试GPU过度绘制 & GPU呈现模式分析、Hierarchy Viewer、MAT、Memory Monitor & Heap Viewer & Allocation Tracker、LeakCanary、Lint。
+
+[Android性能优化之内存优化](https://juejin.im/post/5e72b2d151882549236f9cb8)
 
 
 
@@ -108,6 +118,7 @@
 
 
 
+
 ## 四、架构设计
 
 ### 1、设计模式
@@ -127,6 +138,12 @@
    [插件化:DynamicLoad和DroidPlugin](组件化和插件/插件.md)
 
 ### 2.组件化
+
+ [组件化分享(一期)](组件化和插件/组件化分享(一期).md)
+
+ [ARouter流程分析](ARouter流程分析/ARouter流程分析.md)
+
+ [组件消息总线modular-event](组件化和插件/modular-event.md)
 
  [组件化框架设计和实践](组件化和插件/组件化框架设计和实践.md)
 
@@ -148,4 +165,3 @@
 
 
 
-## 七、Flutter学习

@@ -77,7 +77,7 @@
 
 > **微信群如果不能扫码加入，想进微信群的朋友们，加我微信拉你进群。**
 
- <img src="./关于我们/微信群.jpg" width="300" alt="图片名称"/>
+ <img src="https://liruipeng-doc.oss-cn-hangzhou.aliyuncs.com/%E4%BA%8C%E7%BB%B4%E7%A0%81/mmqrcode1591244400522.png" width="300" alt="图片名称"/>
 
 
 

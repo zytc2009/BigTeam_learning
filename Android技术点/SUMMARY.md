@@ -65,6 +65,8 @@
 
 #### 			3）[异常分析优化](android高级/异常分析优化.md)
 
+4）[apt实践](https://juejin.im/post/5edce4e3e51d45785e00a221)
+
 
 
 ### 4、卡顿优化

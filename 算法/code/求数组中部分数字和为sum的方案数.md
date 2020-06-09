@@ -31,9 +31,7 @@ getAllSchemeNum需要两个参数，也就是两个初始条件，一个是数�
 ### 完整及测试代码如下：
 
 
-
 	public class Test {
-	 
 		public static void main(String[] args) throws Exception 
 		{
 			int[] arr ={5,10,5,2,3,4,6};

@@ -51,7 +51,9 @@
 
 #####      											（1）优化工具
 
-#####            																			Analyze APK
+#####            																				Analyze APK
+
+
 
 #### 							2）gradle使用及优化
 
@@ -68,7 +70,7 @@
 
 #### 			3）[异常分析优化](android高级/异常分析优化.md)
 
-4）[apt实践](https://juejin.im/post/5edce4e3e51d45785e00a221)
+#### 4）[apt实践](https://juejin.im/post/5edce4e3e51d45785e00a221)
 
 
 
@@ -76,19 +78,19 @@
 ####     							1）卡顿优化分析方法与工具
 ####     							2）自动化卡顿检测方案及优化
 
-[深入探索Android卡顿优化-(上)](https://juejin.im/post/5e41fb7de51d4526c80e9108)
+​	[深入探索Android卡顿优化-(上)](https://juejin.im/post/5e41fb7de51d4526c80e9108)
 
-[深入探索Android卡顿优化-(下)](https://juejin.im/post/5e49fc29e51d4526d326b056)
+​	[深入探索Android卡顿优化-(下)](https://juejin.im/post/5e49fc29e51d4526d326b056)
 
 
 
 ### 5、性能优化
 
-1）[Android启动速度优化](https://juejin.im/post/5e6f18a951882549422ef333)
+#### 1）[Android启动速度优化](https://juejin.im/post/5e6f18a951882549422ef333)
 
-2 )  [UI优化总结](ui优化/UI优化.md)
+#### 2 )  [UI优化总结](ui优化/UI优化.md)
 
-3）性能优化工具：TraceView、Systrace、调试GPU过度绘制 & GPU呈现模式分析、Hierarchy Viewer、MAT、Memory Monitor & Heap Viewer & Allocation Tracker、LeakCanary、Lint。
+#### 3）性能优化工具：TraceView、Systrace、调试GPU过度绘制 & GPU呈现模式分析、Hierarchy Viewer、MAT、Memory Monitor & Heap Viewer & Allocation Tracker、LeakCanary、Lint。
 
 [Android性能优化之内存优化](https://juejin.im/post/5e72b2d151882549236f9cb8)
 
@@ -155,7 +157,7 @@
 
 ## 六、Kotlin学习
 
-​	[kotlin分享计划](kotlin/培训计划.md)
+​    [kotlin分享计划](kotlin/培训计划.md)
 
 ​    [kotlin第一期](kotlin/第一期培训内容.md)
 
@@ -163,7 +165,7 @@
 
 ​    [kotlin第二期](kotlin/第二期培训内容.md)
 
-​	[kotlin第三期](kotlin/第三期培训内容.md)
+​    [kotlin第三期](kotlin/第三期培训内容.md)
 
 
 

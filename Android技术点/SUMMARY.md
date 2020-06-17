@@ -72,6 +72,8 @@
 
 #### 4）[apt实践](https://juejin.im/post/5edce4e3e51d45785e00a221)
 
+#### 5）[gc回收机制](android高级/gc回收时机.md)
+
 
 
 ### 4、卡顿优化
@@ -86,7 +88,7 @@
 
 ### 5、性能优化
 
-#### 1）[Android启动速度优化](https://juejin.im/post/5e6f18a951882549422ef333)
+#### 1）[Android启动速度优化](性能优化/启动优化.md)
 
 #### 2 )  [UI优化总结](ui优化/UI优化.md)
 

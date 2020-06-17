@@ -80,11 +80,7 @@
 ####     							1）卡顿优化分析方法与工具
 ####     							2）自动化卡顿检测方案及优化
 
-​	[深入探索Android卡顿优化-(上)](https://juejin.im/post/5e41fb7de51d4526c80e9108)
-
-​	[深入探索Android卡顿优化-(下)](https://juejin.im/post/5e49fc29e51d4526d326b056)
-
-
+​	[深入探索Android卡顿优化](性能优化/Android卡顿分析.md)
 
 ### 5、性能优化
 

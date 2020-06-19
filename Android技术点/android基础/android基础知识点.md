@@ -391,3 +391,14 @@ runOnUiThread - Handler.post - new Thread() - [runOnUiThread] - View.post
 >
 > https://blog.csdn.net/qq_36982160/article/details/89215226
 
+#### VIew的绘制事件
+
+draw()->drawBackground->dispatchDraw()->onDraw()->onDrawForeground
+
+#### View的touch事件
+
+    dispatchPointerEvent
+     ->dispatchTouchEvent，onInterceptTouchEvent,onTouch（如果listener不为空） ->onTouchEvent
+     ->dispatchGericMotionEvent->dispatchGericPointerEvent
+    						->dispatchGericFocusedEvent
+    					   	—>dispatchGericMotionInternal

@@ -1,3 +1,9 @@
+[TOC]
+
+#### 热修复的核心原理
+
+利用Android类加载机制，把需要修复的类打包成dex文件，把这个修复过的dex文件排在dexElements最前面，ClassLoader在修复过的dex文件加载到类之后就不会再去加载错误的类了。
+
 #### AIDL
 
 > 1. 定义 AIDL 是 android Interface Dialog Launguage , 是一个android 接口 对话语言。
@@ -124,25 +130,6 @@ Retryable.Result ensureGone(final KeyedWeakReference reference, final long watch
 > ```
 >
 > https://www.jianshu.com/p/c78ec01be9ae
-
-#### 插件化实现的思想
-
->
-> 类加载：
->
-> Android中常用的有两种类加载器，DexClassLoader和PathClassLoader，它们都继承于BaseDexClassLoader。
->
-> 区别在于调用父类构造器时，DexClassLoader多传了一个optimizedDirectory参数，这个目录必须是内部存储路径，用来缓存系统创建的Dex文件。而PathClassLoader该参数为null，只能加载内部存储目录的Dex文件。所以我们可以用DexClassLoader去加载外部的apk。
->
-> 双亲委托机制：
->
-> ClassLoader加载类时，先查看自身是否已经加载过该类，如果没有加载过会首先让父加载器去加载，如果父加载器无法加载该类时才会调用自身的findClass方法加载，该机制很大程度上避免了类的重复加载。
-> 插件化设计内容稍多，具体可以参考下面的文章。
->
-> https://www.jianshu.com/p/0a2501328e0e
->
-> https://www.jianshu.com/p/590721df1699
->
 
 #### AndroidStudio-Gradle多渠道打包
 

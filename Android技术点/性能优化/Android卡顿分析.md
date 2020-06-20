@@ -1,4 +1,4 @@
-[toc]
+[TOC]
 
 ### Android卡顿分析和优化
 
@@ -642,7 +642,7 @@ loop()方法中,我们可以看到，在执行消息前输出的">>>>> Dispatchi
 
 ##### AndroidPerformanceMonitor（BlockCanary）
 
-它是一个非侵入式的性能监控组件，可以通过通知的形式弹出卡顿信息。它的原理就是我们刚刚讲述到的卡顿监控的实现原理。
+它是一个非侵入式的性能监控组件，可以通过通知的形式弹出卡顿信息。**它的原理**就是我们刚刚讲述到的卡顿监控的实现原理。
 
 **使用步骤：**
 
@@ -1157,3 +1157,6 @@ https://blog.csdn.net/lyb2518/article/details/75026895（StrictMode）
 https://blog.csdn.net/happylishang/article/details/104196560（缓冲模式）
 
 https://time.geekbang.org/column/article/a36d394d00f5efecd12ca8e6c3775d30/share?code=XowV4att8DiSVrHktj9%2FFSsAaiAqqZq70iwM52xn-zA%3D&oss_token=8f3cf31255d57c57
+
+[微信卡顿分析工具之Trace Canary](https://mp.weixin.qq.com/s/0EprsJ7sXKmphghMsU3aGw)
+

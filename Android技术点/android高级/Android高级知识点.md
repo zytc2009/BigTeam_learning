@@ -5,6 +5,7 @@
 > 3. 实现方式， Service Client 和 Service Service 同时 持有一个 AIDL文件，编译的时候， 会自动变成一个可以引用的Binder子类。 Client 绑定服务成功后， 获取这个子类，可以使用里面的方法。 Service 在 onBind 方法里面 返回 这个Binder 类。
 > 4. 内部实现原理 是Binder ，实现了进程之间的通信。
 > 5. 就像 retrofit 和okhttp 关系一样, retrofit 提供更加友好的api,真正的网络请求还是由 okhttp发起的
+> 6. binder一旦died，要重连或者关闭
 
 #### Binder，为什么选择Binder实现Android中跨进程通信
 

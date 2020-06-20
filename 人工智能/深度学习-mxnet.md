@@ -234,13 +234,54 @@ for epoch in range(num_epochs):  # 训练模型一共需要num_epochs个迭代�
 
  true_w, w    true_b, b
 
+3.3简洁实现：
 
+仍然用3.2的代码生成的数据集，我们用Gluon提供的data包读取数据，我们定义别名gdata
 
+```
+from mxnet.gluon import data as gdata
 
+batch_size = 10
+# 将训练数据的特征和标签组合
+dataset = gdata.ArrayDataset(features, labels)
+# 随机读取小批量
+data_iter = gdata.DataLoader(dataset, batch_size, shuffle=True)
+```
 
+定义模型，导入`nn`模块，“nn”是neural networks（神经网络）的缩写。我们先定义一个模型变量`net`，它是一个`Sequential`实例。在Gluon中，`Sequential`实例可以看作是一个串联各个层的容器。在构造模型时，我们在该容器中依次添加层。当给定输入数据时，容器中的每一层将依次计算并将输出作为下一层的输入。
 
+```
+from mxnet.gluon import nn
+net = nn.Sequential()#定义模型
+#线性回归的输出层又叫全连接层,全连接层是一个Dense实例。我们定义该层输出个数为1。
+net.add(nn.Dense(1))  #在Gluon中我们无须指定每一层输入的形状
 
+net.initialize(init.Normal(sigma=0.01)) #初始化模型参数
+loss = gloss.L2Loss()  #平方损失又称L2范数损失
+#创建训练实例
+trainer = gluon.Trainer(net.collect_params(), 'sgd', {'learning_rate': 0.03})
+#开始模型训练
+num_epochs = 3
+for epoch in range(1, num_epochs + 1):
+    for X, y in data_iter:
+        with autograd.record():
+            l = loss(net(X), y)
+        l.backward()
+        trainer.step(batch_size)
+    l = loss(net(features), labels)
+    print('epoch %d, loss: %f' % (epoch, l.mean().asnumpy()))
+ 
+得到结果，权重（weight）和偏差（bias）
+dense = net[0]
+true_w, dense.weight.data()
+true_b, dense.bias.data()
+```
 
+### 3.4. softmax回归
+
+线性回归模型适用于输出为连续值的情景，如果输出是离散的，可以使用诸如softmax回归在内的分类模型
+
+softmax回归模型，我们仍然采用将输入特征与权重做线性叠加，，与线性回归的一个主要不同在于，softmax回归的输出值个数等于标签里的类别数
 
 
 

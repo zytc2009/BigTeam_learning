@@ -51,7 +51,7 @@
 
 #####      											（1）优化工具
 
-#####            																				Analyze APK
+#####            																					Analyze APK
 
 
 
@@ -65,7 +65,7 @@
 
 ### 3、Android高级
 
-#### 							1）studio使用优化
+#### 							1）[知识点](android高级/Android高级知识点.md)
 #### 							2）apk瘦包
 
 #### 			3）[异常分析优化](android高级/异常分析优化.md)
@@ -74,13 +74,14 @@
 
 #### 5）[gc回收机制](android高级/gc回收时机.md)
 
+#### 6）studio使用优化
+
 
 
 ### 4、卡顿优化
-####     							1）卡顿优化分析方法与工具
-####     							2）自动化卡顿检测方案及优化
-
 ​	[深入探索Android卡顿优化](性能优化/Android卡顿分析.md)
+
+
 
 ### 5、性能优化
 
@@ -88,9 +89,9 @@
 
 #### 2 )  [UI优化总结](ui优化/UI优化.md)
 
-#### 3）性能优化工具：TraceView、Systrace、调试GPU过度绘制 & GPU呈现模式分析、Hierarchy Viewer、MAT、Memory Monitor & Heap Viewer & Allocation Tracker、LeakCanary、Lint。
+#### 3）[UI渲染优化](性能优化/UI渲染优化.md)
 
-[Android性能优化之内存优化](https://juejin.im/post/5e72b2d151882549236f9cb8)
+#### 4）性能优化工具：TraceView、Systrace、调试GPU过度绘制 & GPU呈现模式分析、Hierarchy Viewer、MAT、Memory Monitor & Heap Viewer & Allocation Tracker、LeakCanary、Lint。
 
 
 
@@ -98,7 +99,9 @@
 
 ​    [LeakCanary源码分析](内存检测和优化/LeakCanary源码分析.md)
 
-​    [深入探索Android内存优化](https://jsonchao.github.io/2019/12/29/深入探索Android内存优化/)
+​    [Android内存优化](内存检测和优化/Android内存优化.md)
+
+   [深入探索Android内存优化](https://jsonchao.github.io/2019/12/29/%E6%B7%B1%E5%85%A5%E6%8E%A2%E7%B4%A2Android%E5%86%85%E5%AD%98%E4%BC%98%E5%8C%96/)
 
 ### 7、电量分析和优化
 

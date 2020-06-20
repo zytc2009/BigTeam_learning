@@ -26,3 +26,13 @@ Crash收集
 APM：
 听云等APM或者基于开源框架搭建
 自建：可以实现更好的个性化定制需求和更高效的数据关联，比如获取用户信息，触发日志回捞等；数据更安全
+
+
+
+推荐个好玩的工具[Matrix](https://github.com/Tencent/matrix), Matrix是微信开源的一套完整的APM解决方案，内部包含Resource Canary(资源监测)/Trace Canary(卡顿监测)/IO Canary(IO监测)等。
+
+Matrix-android 当前监控范围包括：应用安装包大小，帧率变化，启动耗时，卡顿，慢方法，SQLite 操作优化，文件读写，内存泄漏等等。
+
+相关文章：
+
+[微信卡顿分析工具之Trace Canary](https://mp.weixin.qq.com/s/0EprsJ7sXKmphghMsU3aGw)

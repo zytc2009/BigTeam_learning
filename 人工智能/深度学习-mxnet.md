@@ -258,7 +258,7 @@ net.add(nn.Dense(1))  #在Gluon中我们无须指定每一层输入的形状
 
 net.initialize(init.Normal(sigma=0.01)) #初始化模型参数
 loss = gloss.L2Loss()  #平方损失又称L2范数损失
-#创建训练实例
+#创建训练实例，学习率0.03
 trainer = gluon.Trainer(net.collect_params(), 'sgd', {'learning_rate': 0.03})
 #开始模型训练
 num_epochs = 3
@@ -266,8 +266,8 @@ for epoch in range(1, num_epochs + 1):
     for X, y in data_iter:
         with autograd.record():
             l = loss(net(X), y)
-        l.backward()
-        trainer.step(batch_size)
+        l.backward() #计算梯度
+        trainer.step(batch_size) //梯度下降迭代
     l = loss(net(features), labels)
     print('epoch %d, loss: %f' % (epoch, l.mean().asnumpy()))
  
@@ -282,6 +282,97 @@ true_b, dense.bias.data()
 线性回归模型适用于输出为连续值的情景，如果输出是离散的，可以使用诸如softmax回归在内的分类模型
 
 softmax回归模型，我们仍然采用将输入特征与权重做线性叠加，，与线性回归的一个主要不同在于，softmax回归的输出值个数等于标签里的类别数
+
+我们将使用一个图像内容更加复杂的Fashion-MNIST数据集 ，Gluon的`data`包来下载这个数据集，第一次调用时会自动从网上获取数据
+
+```
+mnist_train = gdata.vision.FashionMNIST(train=True)#训练数据集
+mnist_test = gdata.vision.FashionMNIST(train=False)#测试数据集
+```
+
+Fashion-MNIST中一共包括了10个类别，分别为t-shirt（T恤）、trouser（裤子）、pullover（套衫）、dress（连衣裙）、coat（外套）、sandal（凉鞋）、shirt（衬衫）、sneaker（运动鞋）、bag（包）和ankle boot（短靴）。以下函数可以将数值标签转成相应的文本标签。
+
+```
+# 本函数已保存在d2lzh包中方便以后使用
+def get_fashion_mnist_labels(labels):
+    text_labels = ['t-shirt', 'trouser', 'pullover', 'dress', 'coat',
+                   'sandal', 'shirt', 'sneaker', 'bag', 'ankle boot']
+    return [text_labels[int(i)] for i in labels]
+
+#定义一个可以在一行里画出多张图像和对应标签的函数。
+# 本函数已保存在d2lzh包中方便以后使用
+def show_fashion_mnist(images, labels):
+    d2l.use_svg_display()
+    # 这里的_表示我们忽略（不使用）的变量
+    _, figs = d2l.plt.subplots(1, len(images), figsize=(12, 12))
+    for f, img, lbl in zip(figs, images, labels):
+        f.imshow(img.reshape((28, 28)).asnumpy())
+        f.set_title(lbl)
+        f.axes.get_xaxis().set_visible(False)
+        f.axes.get_yaxis().set_visible(False)
+     
+#通过方括号[]来访问任意一个样本，下面获取第一个样本的图像和标签。
+feature, label = mnist_train[0]
+
+#看一下训练数据集中前9个样本的图像内容和文本标签。
+X, y = mnist_train[0:9]
+show_fashion_mnist(X, get_fashion_mnist_labels(y))
+```
+
+读取小批量数据。通过`ToTensor`实例将图像数据从uint8格式变换成32位浮点数格式，并除以255使得所有像素的数值均在0到1之间。`ToTensor`实例还将图像通道从最后一维移到最前一维来方便之后介绍的卷积神经网络计算。通过数据集的`transform_first`函数，我们将`ToTensor`的变换应用在每个数据样本（图像和标签）的第一个元素，即图像之上。
+
+```
+batch_size = 256
+transformer = gdata.vision.transforms.ToTensor()
+if sys.platform.startswith('win'):#Windows暂不支持多进程
+    num_workers = 0  # 0表示不用额外的进程来加速读取数据
+else:
+    num_workers = 4
+
+train_iter = gdata.DataLoader(mnist_train.transform_first(transformer),
+                              batch_size, shuffle=True,
+                              num_workers=num_workers)
+test_iter = gdata.DataLoader(mnist_test.transform_first(transformer),
+                             batch_size, shuffle=False,
+                             num_workers=num_workers)
+                             
+#查看读取一遍训练数据需要的时间
+start = time.time()
+for X, y in train_iter:
+    continue
+'%.2f sec' % (time.time() - start)
+```
+
+softmax回归的从零开始实现
+
+```
+#读取数据集
+#我们将使用Fashion-MNIST数据集，并设置批量大小为256。
+batch_size = 256
+train_iter, test_iter = d2l.load_data_fashion_mnist(batch_size)
+
+
+num_inputs = 784 #样本输入是高和宽均为28像素的图像
+num_outputs = 10 #输出10个类别
+W = nd.random.normal(scale=0.01, shape=(num_inputs, num_outputs))
+b = nd.zeros(num_outputs)
+#梯度
+W.attach_grad()
+b.attach_grad()
+```
+
+`NDArray`按维度操作，可以只对其中同列（`axis=0`）或同行（`axis=1`）的元素求和，并在结果中保留行和列这两个维度（`keepdims=True`）
+
+```
+X = nd.array([[1, 2, 3], [4, 5, 6]])
+X.sum(axis=0, keepdims=True), X.sum(axis=1, keepdims=True)
+```
+
+
+
+
+
+
 
 
 

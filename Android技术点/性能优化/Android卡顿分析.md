@@ -854,6 +854,16 @@ public class AppBlockCanaryContext extends BlockCanaryContext {
 - KeyDispatchTimeout：按键事件在5s的时间内没有处理完成。
 - BroadcastTimeout：广播接收器在前台10s，后台60s的时间内没有响应完成。
 - ServiceTimeout：服务在前台20s，后台200s的时间内没有处理完成。
+- ContentProvider超时
+
+AMS在做这些任务的时候都做了超时检测，一旦超时，就发生ANR：
+scheduleLaunchActivity：sendMessage
+scheduleCreateService:   sendMessage
+scheduleReceiver
+
+ANR是应用没有在规定的时间完成AMS完成指定的任务导致的
+AMS请求调到应用端的binder线程，再丢消息去唤醒主线程来处理
+ANR的产生不是因为主线程loop循环，而是因为主线程有耗时任务
 
 线下ANR的排查步骤就不赘述了。
 

@@ -1,4 +1,4 @@
-[android基础](android基础知识点.md)
+[android基础知识](android基础知识点.md)
 
 [SharedPreferences深度学习](SharedPreference分享/SharedPreferences深度学习.md)
 
@@ -7,3 +7,6 @@
 [svg矢量动画调研](svg矢量动画调研.md)
 
 [容器类](容器类.md)
+
+[handler](handler.md)
+

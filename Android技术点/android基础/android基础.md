@@ -10,3 +10,5 @@
 
 [handler](handler.md)
 
+[activity展示和ui刷新流程](组件展示流程.md)
+

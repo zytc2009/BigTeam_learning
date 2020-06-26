@@ -20,19 +20,26 @@ Handler，Message，looper 和 MessageQueue 构成了安卓的消息机制，han
 
  
 
-· **为什么要有Handler？**
+**为什么要有Handler？**
 
 答：Android在设计的时候，封装了一套消息创建、传递、处理机制，如果不遵循这样的机制就没办法更新UI信息，就会抛出异常。
 
-· **handler使用流程？**
+**handler使用流程？**
 
 1. 首先几个核心类分别是Handler， looper（消息循环） ，messagequeue（消息队列），Message（消息体）。
 
-2. 每个Handler都有一个与之关联的Looper和对应的MessageQueue， 
+2. 每个Handler都有一个与之关联的Looper和对应的MessageQueue
+
+    消息是链表结构，有延时消息，会插入消息。
 
 3. handler调用sendmsg或post方法将message加入与之绑定的looper中的messagequeue中。
 
+   发消息: 加入消息队列-》nativeWake-》nativeMessageQueue->wake -》write(wakeFd)唤醒Looper的wait
+
 4. Looper的loop()中消息循环时，会从消息队列中通过queue.next()取出每个消息msg(如果next()取出的消息为空，则线程阻塞)，然后执行msg.target.dispatchMessage(msg)方法，将消息分发给对应的Handler实例去处理消息
+
+   Loop()取消息， nativePollOnce(ptr, nextTime) -1表示一直等待
+   Looper的核心是native looper的pollnner方法中的epoll_wait(fd)方法调用，阻塞等消息
 
 5. 在handler的dispatchMessage方法中根据msg.callBack属性判断，若msg.callback属性不为空，则代表使用了post（Runnable r）发送消息，则直接回调Runnable对象里复写的run（），若msg.callback属性为空，则代表使用了sendMessage（Message msg）发送消息，则回调复写的handleMessage(msg
 
@@ -58,9 +65,15 @@ Looper在创建时将对象存储在ThreadLocal中，并对外提供了静态方
 
 在子线程中，如果手动为其创建了Looper，那么在所有的事情完成以后应该调用quit方法来终止消息循环，否则这个子线程就会一直处于等待（阻塞）状态，而如果退出Looper以后，这个线程就会立刻（执行所有方法并）终止，因此建议不需要的时候终止Looper。
 
-** **
 
-** **
+
+消息传递：消息发送，消息循环，消息分发
+时间不准确，受阻塞等待时间影响，也受前一个消息处理影响
+
+**idlehandler**：
+适用场景：延时任务；批量任务，只关注结果
+
+
 
  **相关源码**
 

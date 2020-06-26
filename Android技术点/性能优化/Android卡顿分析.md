@@ -482,6 +482,8 @@ AndroidSDK/tools目录下，通过monitor.bat用Android Device Monitor可视化�
 - D: 将面板右移；
 - M: 高亮某一段耗时内容。
 
+**注意**：cpu时间、wall time的区别
+
 **优势：**
 
 - 轻量级，开销小。
@@ -494,6 +496,8 @@ AndroidSDK/tools目录下，通过monitor.bat用Android Device Monitor可视化�
 由于系统预留了Trace.beginSection() 接口来**监听应用程序的调用耗时**，那我们有没有办法在 systrace 上面自动增加应用程序的耗时分析呢？
 
 划重点了，我们可以通过**编译时给每个函数插桩的方式**来实现，也就是在重要函数的入口和出口分别增加Trace.beginSection和Trace.endSection，为了性能的考虑，我们需要过滤掉大部分指令数比较少的函数，这样就能实现应用程序的耗时监控。
+
+
 
 
 ##### Simpleperf
@@ -569,7 +573,7 @@ Profilo能够低耗时地快速获取Java堆栈的具体实现原理为当Signal
 
 但是目前 Profilo 快速获取堆栈的功能不支持 Android 8.0 和 Android 9.0，并且它内部使用了Hook等大量的黑科技手段，鉴于稳定性问题，建议采取抽样部分用户的方式来开启该功能。
 
-[Profilo项目地址](httpshttps://github.com/facebookincubator/profilo)
+[Profilo项目地址](https://github.com/facebookincubator/profilo)
 
 
 #### 卡顿监控

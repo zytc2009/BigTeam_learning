@@ -179,7 +179,7 @@
 > 当在主线程分别调用 View.post 、Handler.post 、 runOnUiThread , new Thread() - [runOnUiThread] 四个方法执行顺序从快到慢为：
 
 ```
-runOnUiThread - Handler.post - new Thread() - [runOnUiThread] - View.post
+runOnUiThread - Handler.post - new Thread()-[runOnUiThread] - View.post
 ```
 
 > 分析：
@@ -402,3 +402,9 @@ draw()->drawBackground->dispatchDraw()->onDraw()->onDrawForeground
      ->dispatchGericMotionEvent->dispatchGericPointerEvent
     						->dispatchGericFocusedEvent
     					   	—>dispatchGericMotionInternal
+
+#### FragmentPagerAdapter和FragmentStatePagerAdapter区别
+
+FragmentPagerAdapter 会保留页面的状态，并不会完全销毁掉。
+FragmentStatePagerAdapter会完全销毁滑动过去的item，当需要初始化的时候，
+会重新初始化页面，然后将mSavedState中存储的状态重新赋予这个新的fragment， 达到fragment恢复的效果。

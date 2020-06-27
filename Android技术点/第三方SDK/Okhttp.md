@@ -533,6 +533,21 @@ void start(boolean sendConnectionPreface) throws IOException {
   }
 ```
 
+### okhttp运用的设计模式
+
+构造者模式（OkhttpClient,Request等各种对象的创建）
+
+工厂模式（在Call接口中，有一个内部工厂Factory接口。）
+
+单例模式（Platform类，已经使用Okhttp时使用单例）
+
+策略模式（在CacheInterceptor中，在响应数据的选择中使用了策略模式，选择缓存数据还是选择网络访问。）
+
+责任链模式（拦截器的链式调用）
+
+享元模式（Dispatcher的线程池中，不限量的线程池实现了对象复用）
+
+
 
 
 相关文章：

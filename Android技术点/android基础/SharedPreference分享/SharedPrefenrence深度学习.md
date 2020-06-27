@@ -715,7 +715,34 @@ public boolean commit() {
 7.目前咱们项目中tt_sp_app_list.xml,userSystem_sp.xml这两个文件非常大。
 8.commit 发生在 UI 线程中，apply 发生在工作线程中，对于数据的提交最好是批量操作统一提交。虽然apply 发生在工作线程（不会因为IO阻塞UI线程）但是如果添加任务较多也有可能带来其他严重后果（参照ActivityThread源码中handleStopActivity方法实现）。
 
+**相关的问题**
 
-## 替代方案
+加载慢：初始化加载整个文件
+
+全量写入：单次改动都会导致整体写入
+
+卡顿：补偿策略导致
+
+
+
+**存储优化**：
+
+常规存储：每次产生一条数据，写入磁盘：不丢失，性能会损耗
+
+开辟一个内存buffer，先存buffer，再存文件：可能会丢数据
+
+mmap：内存映射文件，系统自动写入，高性能，不丢失；如微信的XLog，美团的Logan等
+
+
+
+
+### 替代方案
 1.自己实现一套存储策略。
 2.https://github.com/Tencent/MMKV 微信开源的MMKV。
+
+   mmap和文件锁保证数据完整
+
+   增量写入、使用Protocol Buffer
+
+   支持从SP迁移
+

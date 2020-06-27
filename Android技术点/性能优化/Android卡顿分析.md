@@ -1145,6 +1145,49 @@ ANR-WatchDog是一种非侵入式的ANR监控方案，它能够弥补我们在�
 
 首先，针对卡顿，我们采用了线上、线下工具相结合的方式，线下工具我们需要尽可能早地去暴露问题，而针对于线上工具呢，我们侧重于监控的全面性、自动化以及异常感知的灵敏度。
 
+
+
+#### 小测验：列表页卡顿优化
+
+> 常规：convertView复用，使用viewholder；耗时任务异步处理
+>
+> **优化方案** ：
+>
+> 布局相关：减少层级，避免过度绘制；异步infalte或者X2C
+>
+> 图片相关：避免过大尺寸：GC频繁、内存抖动；滑动式取消加载
+>
+> 线程相关：线程池收敛线程，降低线程优先级；避免UI线程时间片被抢占
+>
+> **TextView优化**：
+>
+> 对复杂文本性能不佳；BoringLayout单行，StaticLayout多行；DynamicLayout可编辑
+>
+> TextView确定与调用layout主要在这几个过程：
+>   1.在textview的onMeasure的时候，如果还没有layout，在makeNewLayout方法中开始选择需要的layout。
+>   2.如果textview设定为单行模式了，运行makeSingleLayout来选择单行情况下的layout。
+>   3.如果是属于Spannable的文本对象，使用动态布局DynamicLayout，否则，使用isBoring判断是不是单纯的单行布局，是则使用BoringLayout，其他情况使用StaticLayout。
+>   4.如果不是单行的，同样按照这个逻辑区分出BoringLayout，DynamicLayout与StaticLayout，参数略有不同。
+>   5.获得测量结果的高宽，参与计算。
+>   6.如果需要重新测量，运行view的requestLayout方法。
+>   7.在onDraw的时候，暂存已有的canvas。
+>   8.调用layout.draw在canvas上进行绘制。
+>   9.返回结果进行叠加。
+>
+> 优化策略：
+>
+>   展示类StaticLayout即可，性能优于DynamicLayout，可以异步创建StaticLayout，然后设置给自定义View
+>
+>  你也可以用facebook/TextLayoutBuilder
+>
+> **其他**：
+>
+> SysTrace跟踪
+>
+> 注意字符串拼接
+
+
+
 #### 总结：
 
 其实看到这里，大家会发现要做好应用的卡顿优化的确不是一件简单的事，它需要你有成体系的知识构建基底。

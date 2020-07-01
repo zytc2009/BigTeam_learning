@@ -3,6 +3,34 @@
 
 今天这篇文章希望能够带大家一起来掀开内存优化的神秘面纱，让我们对内存整体有一个较清晰的认识。
 
+#### 查看内存：
+
+1.查看指定内存使用情况
+
+使用命令：adb shell，dumpsys meminfo 应用包名
+
+或者：adb shell showmap -a PID号 (adb shell showmap -a 2786)
+
+2.查看cpu使用情况：         
+
+​    输入命令：top -m 10 -s cpu（-m显示最大数量，-s 按指定行排序）
+
+3.代码查看
+
+```java
+ActivityManager activityManager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+        //最大分配内存
+        int memory = activityManager.getMemoryClass();
+        //最大分配内存获取方法2
+       float maxMemory = (float) (Runtime.getRuntime().maxMemory() * 1.0/ (1024 * 1024));
+        //当前分配的总内存
+        float totalMemory = (float) (Runtime.getRuntime().totalMemory() * 1.0/ (1024 * 1024));
+        //剩余内存
+        float freeMemory = (float) (Runtime.getRuntime().freeMemory() * 1.0/ (1024 * 1024));
+```
+
+
+
 #### 6G内存一定比4G内存更好么？
 
 这个问题可能大部分人一时想不好应该怎么回答，回答这个问题之前，我们先了解下手机内存，手机内存就像是PC的内存一样，但是考虑到功耗和体积，手机使用的是LPDDR RAM，全称是低功耗双倍速率内存。

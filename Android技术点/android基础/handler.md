@@ -6,7 +6,8 @@
 
 Handler，Message，looper 和 MessageQueue 构成了安卓的消息机制，handler创建后可以通过 sendMessage 将消息加入消息队列，然后 looper不断的将消息从 MessageQueue 中取出来，回调到 Hander 的 handleMessage方法，从而实现线程的通信。
 
- 
+ 消息传递：消息发送，消息循环，消息分发
+时间不准确，受阻塞等待时间影响，也受前一个消息处理影响
 
 从两种情况来说，第一在UI线程创建Handler,此时我们不需要手动开启looper，因为在应用启动时，在ActivityThread的main方法中就创建了一个当前主线程的looper，并开启了消息队列，消息队列是一个无限循环，为什么无限循环不会ANR?因为可以说，应用的整个生命周期就是运行在这个消息循环中的，安卓是由事件驱动的，Looper.loop不断的接收处理事件，每一个点击触摸或者Activity每一个生命周期都是在Looper.loop的控制之下的，looper.loop一旦结束，应用程序的生命周期也就结束了。我们可以想想什么情况下会发生ANR，第一，事件没有得到处理，第二，事件正在处理，但是没有及时完成，而对事件进行处理的就是looper，所以只能说事件的处理如果阻塞会导致ANR，而不能说looper的无限循环会ANR
 
@@ -23,6 +24,8 @@ Handler，Message，looper 和 MessageQueue 构成了安卓的消息机制，han
 **为什么要有Handler？**
 
 答：Android在设计的时候，封装了一套消息创建、传递、处理机制，如果不遵循这样的机制就没办法更新UI信息，就会抛出异常。
+
+
 
 **handler使用流程？**
 
@@ -41,7 +44,7 @@ Handler，Message，looper 和 MessageQueue 构成了安卓的消息机制，han
    Loop()取消息， nativePollOnce(ptr, nextTime) -1表示一直等待
    Looper的核心是native looper的pollnner方法中的epoll_wait(fd)方法调用，阻塞等消息
 
-5. 在handler的dispatchMessage方法中根据msg.callBack属性判断，若msg.callback属性不为空，则代表使用了post（Runnable r）发送消息，则直接回调Runnable对象里复写的run（），若msg.callback属性为空，则代表使用了sendMessage（Message msg）发送消息，则回调复写的handleMessage(msg
+5. 在handler的dispatchMessage方法中根据msg.callBack属性判断，若msg.callback属性不为空，则代表使用了post（Runnable r）发送消息，则直接回调Runnable对象里复写的run（），若msg.callback属性为空，则代表使用了sendMessage（Message msg）发送消息，则回调复写的handleMessage(msg）
 
  **何时创建Looper和messageQueue**
 
@@ -65,10 +68,92 @@ Looper在创建时将对象存储在ThreadLocal中，并对外提供了静态方
 
 在子线程中，如果手动为其创建了Looper，那么在所有的事情完成以后应该调用quit方法来终止消息循环，否则这个子线程就会一直处于等待（阻塞）状态，而如果退出Looper以后，这个线程就会立刻（执行所有方法并）终止，因此建议不需要的时候终止Looper。
 
+**主线程 Looper 死循环为什么不会导致应用卡死？**
+
+> 这里涉及到Linux pipe/epoll机制，简单说就是在主线程的MessageQueue没有消息时，便阻塞在loop的queue.next()中的nativePollOnce()方法里，此时主线程会释放CPU资源进入休眠状态，直到下个消息到达或者有事务发生，通过往pipe管道写端写入数据来唤醒主线程工作。这里采用的epoll机制，是一种IO多路复用机制，可以同时监控多个描述符，当某个描述符就绪(读或写就绪)，则立刻通知相应程序进行读或写操作，本质同步I/O，即读写是阻塞的。 所以说，主线程大多数时候都是处于休眠状态，并不会消耗大量CPU资源。
+
+**主线程的消息循环机制是什么？**
+
+> 事实上，会在进入死循环之前便创建了新binder线程，在代码ActivityThread.main()中：
+
+```cpp
+public static void main(String[] args) {
+//创建Looper和MessageQueue对象，用于处理主线程的消息
+ Looper.prepareMainLooper();
+
+ //创建ActivityThread对象
+ ActivityThread thread = new ActivityThread(); 
+
+ //建立Binder通道 (创建新线程)
+ thread.attach(false);
+
+ Looper.loop(); //消息循环运行
+ throw new RuntimeException("Main thread loop unexpectedly exited");
+}
+```
+
+> **Activity的生命周期都是依靠主线程的Looper.loop**，当收到不同Message时则采用相应措施：一旦退出消息循环，那么你的程序也就可以退出了。 从消息队列中取消息可能会阻塞，取到消息会做出相应的处理。如果某个消息处理时间过长，就可能会影响UI线程的刷新速率，造成卡顿的现象。
+>  thread.attach(false)方法函数中便会创建一个Binder线程（具体是指ApplicationThread，Binder的服务端，用于接收系统服务AMS发送来的事件），该Binder线程通过Handler将Message发送给主线程。「Activity 启动过程」
+>
+> 比如收到msg=H.LAUNCH_ACTIVITY，则调用ActivityThread.handleLaunchActivity()方法，最终会通过反射机制，创建Activity实例，然后再执行Activity.onCreate()等方法；
+>
+> 再比如收到msg=H.PAUSE_ACTIVITY，则调用ActivityThread.handlePauseActivity()方法，最终会执行Activity.onPause()等方法。
+>
+> ActivityThread通过ApplicationThread和AMS进行进程间通讯，AMS以进程间通信的方式完成ActivityThread的请求后会回调ApplicationThread中的Binder方法，然后ApplicationThread会向H发送消息，H收到消息后会将ApplicationThread中的逻辑切换到ActivityThread中去执行，即切换到主线程中去执行，这个过程就是。主线程的消息循环模型
+
+**Handler 是如何能够线程切换**
+
+> **Handler创建的时候会采用当前线程的Looper来构造消息循环系统，Looper在哪个线程创建，就跟哪个线程绑定**，并且Handler是在他关联的Looper对应的线程中处理消息的。
+>
+> 那么Handler内部如何获取到当前线程的Looper呢—–ThreadLocal。ThreadLocal可以在不同的线程中互不干扰的存储并提供数据，通过ThreadLocal可以轻松获取每个线程的Looper。当然需要注意的是线程是默认没有Looper的，如果需要使用Handler，就必须为线程创建Looper。我们经常提到的主线程，也叫UI线程，它就是ActivityThread，ActivityThread被创建时就会初始化Looper，这也是在主线程中默认可以使用Handler的原因。
+>
+> 系统为什么不允许在子线程中访问UI？（摘自《Android开发艺术探索》） 这是因为Android的UI控件不是线程安全的，如果在多线程中并发访问可能会导致UI控件处于不可预期的状态，那么为什么系统不对UI控件的访问加上锁机制呢？缺点有两个： 首先加上锁机制会让UI访问的逻辑变得复杂 锁机制会降低UI访问的效率，因为锁机制会阻塞某些线程的执行。 所以最简单且高效的方法就是采用单线程模型来处理UI操作。
+
+**子线程中Toast，showDialog，的方法**
+
+正常是不行的，报错，子线程不能操作ui，改为以下方式测试通过：
+
+```java
+new Thread(new Runnable() {
+        @Override
+        public void run() {
+            Looper.prepare();
+            Toast.makeText(MainActivity.this, "run on thread", Toast.LENGTH_SHORT).show();
+            Looper.loop();
+        }
+}).start();
+```
+
+原因是啥呢？肯定是跟handler有关
+
+```
+Toast类：
+public Toast(@NonNull Context context, @Nullable Looper looper) {
+     ...
+     mTN = new TN(context.getPackageName(), looper);
+}
+
+TN类：
+TN(String packageName, @Nullable Looper looper) {
+       if (looper == null) {
+          // Use Looper.myLooper() if looper is not specified.
+           looper = Looper.myLooper();
+           if (looper == null) {//查看当前线程的looper
+             throw new RuntimeException(
+                            "Can't toast on a thread that has not called Looper.prepare()");
+            }
+       }
+       mHandler = new Handler(looper, null) { ...}
+}
+
+同理看dialog类：
+ Dialog(@NonNull Context context, @StyleRes int themeResId, boolean createContextThemeWrapper) {
+        ...
+        mListenersHandler = new ListenersHandler(this);//创建handler，需要Looper初始化
+ }
+```
 
 
-消息传递：消息发送，消息循环，消息分发
-时间不准确，受阻塞等待时间影响，也受前一个消息处理影响
 
 **idlehandler**：
 适用场景：延时任务；批量任务，只关注结果

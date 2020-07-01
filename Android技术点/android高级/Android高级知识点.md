@@ -31,9 +31,33 @@
 > 4. Binder跨进程通信机制：基于C/S架构，由Client、Server、Server Manager和Binder驱动组成。
 > 5. Binder驱动实现的原理：通过内存映射，即系统调用了mmap（）函数。
 > 6. Server Manager的作用：管理Service的注册和查询。
-> 7. Binder驱动的作用：（1）传递进程间的数据，通过系统调用mmap（）函数；（2）实现线程的控制，通过Binder驱动的线程池，并由Binder驱动自身进行管理。
+> 7. Binder驱动的作用：（1）传递进程间的数据，通过系统调用mmap()函数；（2）实现线程的控制，通过Binder驱动的线程池，并由Binder驱动自身进行管理。
 > 8. Server进程会创建很多线程处理Binder请求，这些线程采用Binder驱动的线程池，由Binder驱动自身进行管理。一个进程的Binder线程池默认最大是16个，超过的请求会阻塞等待空闲的线程。
 > 9. Android中进行进程间通信主要通过Binder类（已经实现了IBinder接口），即具备了跨进程通信的能力。
+>
+> IPC机制简介：
+>
+> IPC是Inter-Process Communication的缩写，含义就是跨进程通信；
+> 1.IPC（进程间通信）机制不是Android系统所独有的，其他系统也有相应的进程间通信机制。
+> 2.Android系统架构中，大量采用了Binder机制作为IPC，是Android系统中最重要的组成。
+> 3.当然也存在部分其他的IPC方式，比如Zygote通信便是采用socket。
+>
+> Android系统中，每个应用程序是由Android的Activity，Service，Broadcast，ContentProvider这四大组件的中一个或多个组合而成，这四大组件所涉及的多进程间的通信底层都是依赖于Binder IPC机制。
+>
+> 直观的看，Binder是Android中的一个类，实现了IBinder接口
+> 从不同角度理解Binder：
+>
+> 1 从IPC角度，Binder是跨进程通信方式
+>
+> 2 从FrameWork角度，Binder是ServiceManager连接各种Manager（如am，wm
+> ）等的桥梁
+>
+> 3 从应用层角度，Binder是客户端与服务端通信的媒介
+>
+> IPC原理:
+>
+> 每个Android的进程，只能运行在自己进程所拥有的虚拟地址空间。对于用户空间，不同进程之间彼此是不能共享的，而内核空间却是可共享的。Client进程向Server进程通信，就是利用进程间可共享的内核内存空间来完成底层通信工作的，Client端与Server端进程往往采用ioctl等方法跟内核空间的驱动进行交互。
+>
 
 #### 事件分发
 
@@ -400,32 +424,6 @@ Retryable.Result ensureGone(final KeyedWeakReference reference, final long watch
 > 但是由于它的这个存储空间是内存中分配的，当存储的时候会先从ByteArrayPool中取出一块已经分配的内存区域,不必每次存数据都要进行内存分配，而是先查找缓冲池中有无适合的内存区域，如果有，直接拿来用，从而减少内存分配的次数，所以他比较适合大量的数据量少的网络数据交互情况。
 >
 > 还有一个原因是volley的线程池是基于数组实现的，即newFixedThreadPool（4）核心线程数不超过4个，也不会自动扩展，一旦大数据上传或者下载长时间占用了线程资源，后续所有的请求都会被阻塞。最后，Volley是不适合上次和下载大文件,但不代表不能处理大文件。BasicNetwork是volley处理返回response的默认实现，它是把server返回的流全部导入内存，ByteArrayPool只是一个小于4k的内存缓存池，在BasicNetwork里实现。上传和BasicNetwork应该没有多大关系，volley也是可以上传大数据的，volley也是可以下载大数据的，只是你不要使用BasicNetwork就行了。
-
-#### OKHttp的使用，网络请求中的Intercept
-
-> 1. 创建一个请求客户端okhttpClient对象
-> 2. 创建一个请求Request对象，通过Build模式创建
-> 3. 创建一个实际的http请求call对象，它可以调用execute（同步获取数据），也可以调用enqueue（异步获取数据）
->
-> https://blog.csdn.net/pgg_cold/article/details/79405651
->
-> 在OkHttp内部是使用拦截器来完成请求和响应，利用的是责任链设计模式，可以用来转换，重试，重写请求的机制。现在主流的网络框架非Retrofit莫属，它的内部请求也是基于OkHttp的 
->
-> 拦截器分为应用拦截器和网络拦截器
-> 具体使用可参考
-> https://blog.csdn.net/RockyHua/article/details/80079621
-
-> 优点：
->
-> 1. 支持SPDY，允许连接同一主机的所有请求分享一个socket。 
-> 2. 如果SPDY不可用，会使用连接池减少请求延迟。
-> 3. 使用GZIP压缩下载内容，且压缩操作对用户是透明的。
-> 4. 利用响应缓存来避免重复的网络请求。
-> 5. 当网络出现问题的时候，OKHttp会依然有效，它将从常见的连接问题当中恢复。
-> 6. 如果你的服务端有多个IP地址，当第一个地址连接失败时，OKHttp会尝试连接其他的地址，这对IPV4和IPV6以及寄宿在多个数据中心的服务而言，是非常有必要的
->   https://blog.csdn.net/weixin_30767921/article/details/94847535
-
-
 
 **HttpClient**、**HttpURLConnection**、**OKHttp**和**Volley**优缺点和性能对比,如何选择？
 

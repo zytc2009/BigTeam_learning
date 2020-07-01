@@ -181,6 +181,17 @@ public class GCTest {
 　　6）尽量不使用finalize()方法;
 　　7）在必要的时候可以考虑使用软引用SoftReference。
 
+
+
+#### 性能调优：
+
+- **线程池**：解决用户响应时间长的问题
+- **连接池**
+- **JVM启动参数**：调整各代的内存比例和垃圾回收算法，提高吞吐量
+- **程序算法**：改进程序逻辑算法提高性能
+
+   
+
 #### 参考链接：
 
  https://blog.csdn.net/qq906627950/article/details/81324825
@@ -189,3 +200,5 @@ public class GCTest {
  https://www.cnblogs.com/cuijj/p/10499621.html
  https://blog.csdn.net/canot/article/details/51037938
  https://blog.csdn.net/a602519773/article/details/82529240
+
+ [JVM性能调优](https://www.cnblogs.com/csniper/p/5592593.html)

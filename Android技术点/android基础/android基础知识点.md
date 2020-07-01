@@ -2,19 +2,11 @@
 
 [TOC]
 
-#### Application生命周期
+#### Application作用
 
-> Android程序启动后的第一个入口点是Application的onCreate();
->
-> onCreate():Application创建的时候调用
->
-> onConfigurationChanged(Configuration newConfig):当配置信息改变的时候会调用，如屏幕旋转、语言切换时。
->
-> onLowMemory():Android系统整体内存较低时候调用，通常在这里释放一些不重要的资源，或者提醒用户清一下垃圾，来保证内存足够而让APP进程不被系统杀掉。它和OnTrimMemory中的TRIM_MEMORY_COMPLETE级别相同。
->
-> onTrimMemory(int level)：Android 4.0 之后提供的一个API，用于取代onLowMemory()。在系统内存不足的时会被调用，提示开发者清理部分资源来释放内存，从而避免被 Android 系统杀死。
->
-> onTerminate():Application结束的时候会调用,由系统决定调用的时机
+保存应用进程的全局变量
+初始化操作
+提供应用上下文
 
 #### Activity生命周期
 
@@ -188,36 +180,9 @@ runOnUiThread - Handler.post - new Thread()-[runOnUiThread] - View.post
 >
 > Handler.post 需要将请求加入 UI线程 Handler , 多了 入队 及 出队 时间。
 >
-> new Thread() - [runOnUiThread] 开启新线程，在启动完成后将请求加入 UI线程 Handler， 多了 线程切换 、入队 及 出队 时间。
+> new Thread() - [runOnUiThread] 开启新线程，在启动完成后将请求加入 UI线程 Handler， 多了 线程切换 、入队及出队时间。
 >
 > View.post 需要在view attach 到 Window 后，通过 ViewRootImpl 的 ViewRootHandler 执行请求。线程切换时间远小于UI渲染时间，所以执行最慢。
-
-#### Binder机制，共享内存实现原理
-
-> IPC机制简介：
->
-> IPC是Inter-Process Communication的缩写，含义就是跨进程通信；
-> 1.IPC（进程间通信）机制不是Android系统所独有的，其他系统也有相应的进程间通信机制。
-> 2.Android系统架构中，大量采用了Binder机制作为IPC，是Android系统中最重要的组成。
-> 3.当然也存在部分其他的IPC方式，比如Zygote通信便是采用socket。
->
-> Android系统中，每个应用程序是由Android的Activity，Service，Broadcast，ContentProvider这四大组件的中一个或多个组合而成，这四大组件所涉及的多进程间的通信底层都是依赖于Binder IPC机制。
->
-> 直观的看，Binder是Android中的一个类，实现了IBinder接口
-> 从不同角度理解Binder：
->
-> 1 从IPC角度，Binder是跨进程通信方式
->
-> 2 从FrameWork角度，Binder是ServiceManager连接各种Manager（如am，wm
-> ）等的桥梁
->
-> 3 从应用层角度，Binder是客户端与服务端通信的媒介
->
-> IPC原理:
->
-> 每个Android的进程，只能运行在自己进程所拥有的虚拟地址空间。对于用户空间，不同进程之间彼此是不能共享的，而内核空间却是可共享的。Client进程向Server进程通信，就是利用进程间可共享的内核内存空间来完成底层通信工作的，Client端与Server端进程往往采用ioctl等方法跟内核空间的驱动进行交互。
-
-> https://www.jianshu.com/p/b35e0716bce1
 
 #### ActivityThread工作原理
 
@@ -275,13 +240,7 @@ runOnUiThread - Handler.post - new Thread()-[runOnUiThread] - View.post
 >
 > TextrueView: 前面的SurfaceView的工作方式是创建一个置于应用窗口之后的新窗口，脱离了Android的普通窗口，因此无法对其应用变换操作(平移、缩放、旋转等)，而TextureView则解决了此问题，Android4.0引入。
 
-#### 主线程Looper.loop为什么不会造成死循环
 
-> 可以这样简单的来理解一下，一个Thread对应一个Looper和一个MessageQueue
-> 这个MessageQueue是个一个阻塞队列，类似BlockingQueue，不同之处在于MessageQueue的阻塞方式是通过Pipe机制实现的。
-> 阻塞队列，就是当队列里没有数据时，如果调用获取队首数据的方法时，当前线程会被阻塞（相当于执行了线程的wait方法），如果队列里面有了插入了新数据，则会唤醒被阻塞的方法（相当于执行了线程的notify方法），并返回该数据。再来看MessageQueue，这里的数据指的就是是每一个消息，这个消息则是通过handler来发送的。
->
-> 综上所述，线程并没有一直死循环的工作，而是在没消息时被暂时挂起了，当有新消息进来的时候，就会又开始工作。
 
 #### ViewPager的缓存实现
 

@@ -43,6 +43,8 @@
 
 ### 1、[Android基础](android基础/android基础.md)
 
+​    [activity展示和ui刷新流程](android基础/组件展示流程.md)
+
 ### 2、开发工具
 
 #### 							1）studio使用优化
@@ -51,22 +53,18 @@
 
 #####      											（1）优化工具
 
-#####            																					Analyze APK
+#####            																					       Analyze APK
 
+#### 							 2）gradle使用及优化
 
-
-#### 							2）gradle使用及优化
-
-
-
-#### 							3）git使用
+#### 							 3）git使用
 
 
 
 ### 3、Android高级
 
 #### 							1）[知识点](android高级/Android高级知识点.md)
-#### 							2）apk瘦包
+#### 							2）[apk瘦包](android高级/apk瘦身.md)
 
 #### 			3）[异常分析优化](android高级/异常分析优化.md)
 
@@ -80,15 +78,13 @@
 
 #### 8)  [权限获取](android高级/权限分享材料.md)
 
+#### 9) [app稳定性](android高级/app稳定性.md)
+
+#### 10) [自定义事件总线](android高级/自定义事件总线的演化.md)
 
 
-### 4、卡顿优化
-​	[深入探索Android卡顿优化](性能优化/Android卡顿分析.md)
 
-
-
-### 5、性能优化
-
+### 4、性能优化
 ​     [性能优化简介](性能优化/README.md)
 
 #### 1）[Android启动速度优化](性能优化/启动优化.md)
@@ -97,11 +93,17 @@
 
 #### 3）[UI渲染优化](性能优化/UI渲染优化.md)
 
-#### 4）性能优化工具：TraceView、Systrace、调试GPU过度绘制 & GPU呈现模式分析、Hierarchy Viewer、MAT、Memory Monitor & Heap Viewer & Allocation Tracker、LeakCanary、Lint。
+#### 4) [卡顿优化](性能优化/Android卡顿分析.md)
+
+#### 5）性能优化工具：TraceView、Systrace、调试GPU过度绘制 & GPU呈现模式分析、Hierarchy Viewer、MAT、Memory Monitor & Heap Viewer & Allocation Tracker、LeakCanary、Lint。
+
+#### 6）[Multidex流程](性能优化/Multidex流程.md)
 
 
 
-### 6、内存检测和优化
+### 5、内存检测和优化
+
+​    [MAT内存分析](内存检测和优化/使用AndroidStudio和MAT进行内存泄漏分析.md)
 
 ​    [LeakCanary源码分析](内存检测和优化/LeakCanary源码分析.md)
 
@@ -109,9 +111,11 @@
 
    [深入探索Android内存优化](https://jsonchao.github.io/2019/12/29/%E6%B7%B1%E5%85%A5%E6%8E%A2%E7%B4%A2Android%E5%86%85%E5%AD%98%E4%BC%98%E5%8C%96/)
 
-### 7、电量分析和优化 
 
-   [电量优化](性能优化/电量优化.md)
+
+### 6、电量分析和优化 
+
+​      [电量优化](性能优化/电量优化.md)
 
 ### 8、[常见错误分析和处理](常见错误处理.md)
 
@@ -128,6 +132,8 @@
    [行为日志库](第三方SDK/行为日志库.md)
 
   [OkHttp代码分析](第三方SDK/Okhttp.md)
+
+  [Glide源码分析](第三方SDK/Glide.md)
 
 
 

@@ -14,21 +14,103 @@ Zygote作用:
 
 
 
-**Zygote启动**：
+#### **Zygote启动**：
 
 init进程（init.rc） ->fork + exec 
 
- 启动zygote和servicemanager，surfaceflinger等服务，servicemanager服务会启动binder机制
+ 启动zygote和servicemanager，surfaceflinger等服务
 
 Zygote Native:
 
 启动虚拟机-》注册android JNI函数-》进入java世界，调用Zygoteinite.main()方法
 
-ZygoteInit.main方法主要做四件事：1.注册soceket，2.启动类加载器，预加载资源，3.启动SystemServer进程，经过层层调用，最终会调用到SystemServer.main方法。4进入runSelectLoop循环处理事件。
+ZygoteInit.main方法主要做四件事：1.注册soceket，2.启动类加载器，预加载资源，3.启动SystemServer，在try catch中执行MethodAndArgsCaller.run；在这里通过反射执行SystemServer.main()方法  4.进入runSelectLoop循环处理事件。
 
-**SystemServer**：
+**binder启动**：
+打开binder驱动，映射内存，注册binder线程，进入binder loop循环
 
-1.Looper.prepareMainLooper(); 2.createSystemContext(),创建ActivityThread; 3. 创建SystemServiceManager 4.启动bootstrap,core,other服务 5.进入looper循环
+#### **SystemServer启动过程**：
+
+1.ZygoteInit.startSystemServer -> ZygoteInit.handleSystemServerProcess -> RuntimeInit.zygoteInit
+
+>   RuntimeInit.zygoteInit : 
+>
+>   	 nativeZygoteInit（）- 》ProcessState->startThreadPool() 启用binder机制
+>	
+>    	applicationInit()  -》 SystemServer.main()
+
+2.SystemServer.main()->new SystemServer().run():
+
+> 1.Looper.prepareMainLooper(); 
+>
+> 2.createSystemContext(),创建ActivityThread，通知主线程application初始化; 
+>
+> 3.创建SystemServiceManager；
+>
+> 4.启动bootstrap,core,other服务
+>
+> 5.进入looper循环
+
+```
+ActivityThread：
+private void attach(boolean system) {
+	...
+   	final IActivityManager mgr = ActivityManager.getService();
+   	try {//这里是关键。mAppThread是一个ApplicationThread实例，通过AMS的attachApplication方法将mAppThread对象关联到了AMS。
+        mgr.attachApplication(mAppThread);
+    } catch (RemoteException ex) {
+       throw ex.rethrowFromSystemServer();
+    }
+ }
+ 
+IActivityManager的实例是一个ActivityManagerService通过Binder机制得到的远程对象，而ActivityManagerService即AMS是运行在系统进程，主要完成管理应用进程的生命周期以及进程的Activity，Service，Broadcast和Provider等。通过AMS的attachApplication方法将mAppThread对象关联到了AMS。
+而AMS通过调用mAppThread的相关方法进行Application的创建、生命周期的管理和Activity的创建、生命周期管理等
+
+ApplicationThread:
+public final void bindApplication(String processName, ApplicationInfo appInfo ...) {
+    。。。
+    AppBindData data = new AppBindData();
+    data.processName = processName;
+    data.appInfo = appInfo;
+    ...
+    sendMessage(H.BIND_APPLICATION, data);
+}
+
+//真正的创建Application，又回到了ActivityThread类
+ActivityThread类:
+private void handleBindApplication(AppBindData data) {
+    ...
+    mInstrumentation = (Instrumentation)
+        cl.loadClass(data.instrumentationName.getClassName())
+        .newInstance();
+    //通过反射初始化一个Instrumentation仪表。
+    ...
+    Application app;
+    try {
+         //通过LoadedApk的makeApplication创建Application实例
+        app = data.info.makeApplication(data.restrictedBackupMode, null);
+        mInitialApplication = app;   
+        if (!data.restrictedBackupMode) {
+                if (!ArrayUtils.isEmpty(data.providers)) {
+                   //处理contentProviders
+                    installContentProviders(app, data.providers);
+                    //对于有contentProvider的进程，我们需要缺包JIT启用 "at some point".
+                    mH.sendEmptyMessageDelayed(H.ENABLE_JIT, 10*1000);
+                }
+         }
+        ...
+        //让Instrumentation仪表调用Application的onCreate()方法
+        mInstrumentation.callApplicationOnCreate(app);
+        ...
+    }
+    ...
+}
+
+```
+
+**ActivityThread**
+
+负责通知AMS，创建application，启动activity，启动service等
 
 
 
@@ -75,9 +157,9 @@ ApplicationThreadProxy：ApplicationThread在AMS服务中的代理类，负责�
 
 （3）Launcher得到AMS让自己“休息”的消息，那么就直接挂起，并告诉AMS我已经Paused了；
 
-（4）AMS知道了Launcher已经挂起之后，就可以放心的为新的Activity准备启动工作了，首先，APP肯定需要一个新的进程去进行运行，所以需要创建一个新进程，这个过程是需要Zygote参与的，AMS通过Socket去和Zygote协商，如果需要创建进程，那么就会fork自身，创建一个线程，新的进程会导入ActivityThread类，这就是每一个应用程序都有一个ActivityThread与之对应的原因；
+（4）AMS知道了Launcher已经挂起之后，就可以放心的为新的Activity准备启动工作了，首先，APP肯定需要一个新的进程去进行运行，所以需要创建一个新进程，这个过程是需要Zygote参与的，AMS通过Socket去和Zygote协商，如果ProcessRecord为空或者它的thread为空，需要创建进程，那么就会fork自身，创建一个线程，新的进程会导入ActivityThread类，这就是每一个应用程序都有一个ActivityThread与之对应的原因；
 
-（5）进程创建好了，通过调用上述的ActivityThread的main方法，这是应用程序的入口，在这里开启消息循环队列，这也是主线程默认绑定Looper的原因；
+（5）进程创建好了，通过调用上述的ActivityThread的main方法，这是应用程序的入口，在这里创建主线程，创建ActivityThread对象，把ApplicationThread注册到AMS，然后开启消息循环队列，这也是主线程默认绑定Looper的原因；
 
 （6）这时候，App还没有启动完，要永远记住，四大组建的启动都需要AMS去启动，必须将上述的应用进程信息注册到AMS中，AMS再在堆栈顶部取得要启动的Activity，通过一系列链式调用去完成App启动；
 
@@ -89,17 +171,33 @@ ApplicationThreadProxy：ApplicationThread在AMS服务中的代理类，负责�
 
 ​     ![app启动2](..\images\app启动.png)
 
-**activity启动**:
+#### **Application初始化**：
 
-创建activity对象，准备好application，创建ContextImpl，attach上下文，生命周期回调
+ActvityThread.attach()向ams报告，AMS添加消息BIND_APPLICATION到应用主线程处理
+主handler的handleBindApplication():
+	创建application，attachBaseContext(),  调用app的onCreate()
+所以生命周期方法不要有耗时操作
 
-源码：
+> Application作用：
+> 保存应用进程的全局变量
+> 初始化操作
+> 提供应用上下文
+
+#### **activity启动**:
+
+**过程**：创建activity对象，准备好application，创建ContextImpl，attach上下文，生命周期回调
+
+    AMS   《--  attachApplication        应用      
+           bindApplication -》   创建application   
+         scheduleLaunchActivity 发消息给主线程
+         
+    ActivityThread类：
     void handleLaunchActivity(){
-       Activity activity = performLaunchActivity();
-       if(activity != null){
-          handleResumeActivity()
-       }
-    }
+        Activity activity = performLaunchActivity();
+        if(activity != null){
+            handleResumeActivity()
+        }
+    }    
     
     void performLaunchActivity(){
       Activity activity = mInstrumentation.newActivity(...);
@@ -111,11 +209,7 @@ ApplicationThreadProxy：ApplicationThread在AMS服务中的代理类，负责�
       activity.performStart();  
       return activity;
     }
- 
 
-    AMS   《--  attachApplication        应用      
-           bindApplication -》     
-         scheduleLaunchActivity 
 生命周期：attach->onCreate->onStart->onResume
 
 

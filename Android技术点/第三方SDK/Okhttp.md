@@ -547,10 +547,17 @@ void start(boolean sendConnectionPreface) throws IOException {
 
 享元模式（Dispatcher的线程池中，不限量的线程池实现了对象复用）
 
+#### 优点
 
+1. 支持SPDY，允许连接同一主机的所有请求分享一个socket。 
+2. 如果SPDY不可用，会使用连接池减少请求延迟。
+3. 使用GZIP压缩下载内容，且压缩操作对用户是透明的。
+4. 利用响应缓存来避免重复的网络请求。
+5. 当网络出现问题的时候，OKHttp会依然有效，它将从常见的连接问题当中恢复。
+6. 如果你的服务端有多个IP地址，当第一个地址连接失败时，OKHttp会尝试连接其他的地址，这对IPV4和IPV6以及寄宿在多个数据中心的服务而言，是非常有必要的
 
 
 相关文章：
 
 1. [Okhttp源码简单解析](https://blog.csdn.net/chunqiuwei/article/details/71939952)
-2. ​
+2. 

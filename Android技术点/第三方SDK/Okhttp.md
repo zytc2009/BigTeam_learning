@@ -337,7 +337,7 @@ public boolean isEligible(Address address, @Nullable Route route) {
 
 隧道技术（Tunneling）是HTTP的用法之一，使用隧道传递的数据（或负载）可以是不同协议的数据帧或包，或者简单的来说隧道就是利用一种网络协议来传输另一种网络协议的数据。
 
-HTTP提供了一个CONNECT方法 ,它是HTTP/1.1协议中预留给能够将连接改为管道方式的代理服务器，该方法就是用来建议一条web隧道。客户端发送一个CONNECT请求给隧道网关请求打开一条TCP链接，当隧道打通之后，客户端通过HTTP隧道发送的所有数据会转发给TCP链接，服务器响应的所有数据会通过隧道发给客户端
+HTTP提供了一个CONNECT方法 ,它是HTTP/1.1协议中预留给能够将连接改为管道方式的代理服务器，该方法就是用来建立一条web隧道。客户端发送一个CONNECT请求给隧道网关请求打开一条TCP链接，当隧道打通之后，客户端通过HTTP隧道发送的所有数据会转发给TCP链接，服务器响应的所有数据会通过隧道发给客户端
 
 ```
 private void connectTunnel(int connectTimeout, int readTimeout, int writeTimeout, Call call,
@@ -532,6 +532,100 @@ void start(boolean sendConnectionPreface) throws IOException {
     return true;
   }
 ```
+
+### RetryAndFollowUpInterceptor：
+
+```
+public Response intercept(Chain chain) throws IOException {
+  ...
+  StreamAllocation streamAllocation = new StreamAllocation(client.connectionPool(),
+      createAddress(request.url()), call, eventListener, callStackTrace);
+ //多次尝试
+  while (true) {
+    if (canceled) {//已取消
+      streamAllocation.release();
+      throw new IOException("Canceled");
+    }
+
+    Response response;
+    boolean releaseConnection = true;
+    try {
+      response = realChain.proceed(request, streamAllocation, null, null);
+      releaseConnection = false;
+    } catch (RouteException e) {
+      //尝试恢复
+      if (!recover(e.getLastConnectException(), streamAllocation, false, request)) {//恢复失败
+        throw e.getLastConnectException();
+      }
+      continue;
+    } catch (IOException e) {
+      //尝试恢复
+      if (!recover(e, streamAllocation, requestSendStarted, request)) throw e;//恢复失败
+      continue;
+    } finally {
+      //处理不了，就抛出异常给上层，释放资源
+    }
+    //看看是否需要重定向
+     Request followUp = followUpRequest(response, streamAllocation.route());
+     。。。
+    //重试次数过多
+    if (++followUpCount > MAX_FOLLOW_UPS) {
+      throw new ProtocolException("Too many follow-up requests: " + followUpCount);
+    }
+    //重定向信息无效
+    if (followUp.body() instanceof UnrepeatableRequestBody) {
+      streamAllocation.release();
+      throw new HttpRetryException("Cannot retry streamed HTTP body", response.code());
+    }
+    //是否拿到新地址
+    if (!sameConnection(response, followUp.url())) {
+      streamAllocation.release();
+      streamAllocation = new StreamAllocation(client.connectionPool(),
+          createAddress(followUp.url()), call, eventListener, callStackTrace);
+      this.streamAllocation = streamAllocation;
+    } else if (streamAllocation.codec() != null) {
+      throw new IllegalStateException("Closing the body of " + response
+          + " didn't close its backing stream. Bad interceptor?");
+    }    
+  }
+}
+
+哪些情况需要重定向呢？
+  private Request followUpRequest(Response userResponse, Route route) throws IOException {
+    int responseCode = userResponse.code();
+    switch (responseCode) {
+      case HTTP_PROXY_AUTH://407表示需要经过代理服务器认证
+        return client.proxyAuthenticator().authenticate(route, userResponse);
+      case HTTP_UNAUTHORIZED://401 身份未认证
+        return client.authenticator().authenticate(route, userResponse);
+      case HTTP_PERM_REDIRECT://
+      case HTTP_TEMP_REDIRECT://307声明请求的资源临时性删除
+        // fall-through
+      case HTTP_MULT_CHOICE: 300 请求的资源可在多处获得。
+      case HTTP_MOVED_PERM:  301 本网页被永久性转移到另一个URL。
+      case HTTP_MOVED_TEMP: 302 请求的网页被重定向到新的地址。
+      case HTTP_SEE_OTHER:  303 建议用户访问其他URL或访问方式。
+        if (!sameConnection(userResponse, url)) {
+          requestBuilder.removeHeader("Authorization");
+        }
+        return requestBuilder.url(url).build();
+      case HTTP_CLIENT_TIMEOUT://超时408
+        return userResponse.request();
+      case HTTP_UNAVAILABLE: //503
+        if (retryAfter(userResponse, Integer.MAX_VALUE) == 0) {
+          return userResponse.request();
+        }
+        return null;
+      default:
+        return null;
+    }
+  }
+
+```
+
+
+
+
 
 ### okhttp运用的设计模式
 

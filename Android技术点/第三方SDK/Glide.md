@@ -157,6 +157,15 @@ public Resource<Bitmap> decode(InputStream source, int width, int height, Option
 }
 
 Downsampler 类的主要方法：
+public Resource<Bitmap> decode(InputStream is, ..., DecodeCallbacks callbacks) throws IOException {
+    try {
+      Bitmap result = decodeFromWrappedStreams(is, bitmapFactoryOptions,..., callbacks);
+      //返回BitmapResource管理对象
+      return BitmapResource.obtain(result, bitmapPool);
+    } finally {
+    }
+}
+
 private Bitmap decodeFromWrappedStreams(InputStream is, ...) throws IOException {
     // 4.4之前版本, inBitmap大小必须精确匹配要解码的图片
     if ((options.inSampleSize == 1 || isKitKatOrGreater) && shouldUsePool(is)) {     
@@ -181,6 +190,15 @@ private Bitmap decodeFromWrappedStreams(InputStream is, ...) throws IOException 
 
 ```：
 LruBitmapPool：图片池
-SizeConfigStrategy
-Attri
+SizeConfigStrategy：4.4以上
+AttributeStrategy：4.4之前版本, inBitmap大小必须精确匹配要解码的图片
+```
+
+```
+BitmapResource：//管理图片
+  @Override
+  public void recycle() {//回收图片加入缓存池
+    bitmapPool.put(bitmap);
+  }
+
 ```

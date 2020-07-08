@@ -661,7 +661,8 @@ public boolean commit() {
 直接看时序图：
 ![image](commit.png)
 
-最后需要提一下的就是 listener:
+**最后需要提一下的就是** listener:
+
 * 对于 apply, listener 回调时内存已经完成同步, 但是异步磁盘任务不保证是否完成。
 * 对于 commit, listener 回调时内存和磁盘都已经同步完毕。  
 

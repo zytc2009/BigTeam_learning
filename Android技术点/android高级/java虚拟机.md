@@ -1,8 +1,10 @@
-### GC机制
+### java虚拟机
 
-#### 前言
+![虚拟机](..\images\虚拟机.jpg)
 
-开始聊GC之前，我们需要谈下java的内存模型，java的内存模型主要分为如下几种：
+[Toc]
+
+#### java的内存模型：
 
 ```
 1，堆（线程共享）
@@ -116,7 +118,6 @@ finalize()方法是对象逃脱死亡命运的最后一次机会,稍后GC将对F
 
 ```
 public class GCTest {
-
     public static GCTest object = null;
 
     @Override
@@ -125,7 +126,6 @@ public class GCTest {
         System.out.println("finalize method executed!");
         GCTest.object = this;
     }
-
 
     public static void main(String[] args){
         object = new GCTest();
@@ -157,7 +157,7 @@ public class GCTest {
 #### Full GC触发时机：
 
 ```
-    1）调用System.gc时，系统建议执行Full GC，但是不必然执行
+   1）调用System.gc时，系统建议执行Full GC，但是不必然执行
 　　2）老年代空间不足
 　　3）方法区空间不足
 　　4）通过Minor GC后进入老年代的平均大小大于老年代的可用内存
@@ -186,11 +186,57 @@ public class GCTest {
 #### 性能调优：
 
 - **线程池**：解决用户响应时间长的问题
+
 - **连接池**
+
 - **JVM启动参数**：调整各代的内存比例和垃圾回收算法，提高吞吐量
+
 - **程序算法**：改进程序逻辑算法提高性能
 
    
+
+#### JVM类加载机制
+
+> 类从被加载到虚拟机内存中开始，到卸载出内存为止，它的整个生命周期包括：加载（Loading）、验证（Verification）、准备（Preparation）、解析（Resolution）、初始化（Initialization）、使用（Using）和卸载（Unloading）7个阶段。其中验证、准备、解析3个部分统称为连接（Linking），这7个阶段的发生顺序如图：
+>
+> ![这里写图片描述](https://img-blog.csdn.net/20170907001317206?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvU2lsZW5jZU9P/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast)
+>
+> https://blog.csdn.net/SilenceOO/article/details/77876123
+
+#### 类加载器的双亲委派机制
+
+当一个类收到了类加载请求，他首先不会尝试自己去加载这个类，而是把这个请求委派给父类去完成，每一个层次类加载器都是如此，因此所有的加载请求都应该传送到启动类加载其中，只有当父类加载器反馈自己无法完成这个请求的时候（在它的加载路径下没有找到所需加载的Class），子类加载器才会尝试自己去加载。作用：可以保证java核心库或第三方库的安全（防止低一级加载器加载的类覆盖高级加载器加载的类） 
+
+主要体现在ClassLoader的loadClass()方法中，思路很简单：先检查是否已经被加载过，若没有加载则调用父类加载器的loadClass()方法，若父类加载器为空则默认使用启动类加载器作为父类加载器。如果父类加载器加载失败，抛出ClassNotFoundException异常后，调用自己的findClass()方法进行加载。
+
+
+
+#### 类的五个加载过程,以Person person = new Person()为例描述
+
+1.加载:根据查找路径找到相应的class文件,然后导入。类的加载方式分为 ...
+2.检查:检查夹加载的class文件的正确性。
+3.准备;给类中的静态变量分配内存空间。
+4.解析:虚拟机将常量池中的符号引用替换成直接引用的过程。符号引用就理解为一个标示,而在直接引用直接指向内存中的地址。
+5.初始化:对静态变量和静态代码块执行初始化工作。
+
+https://www.jianshu.com/p/3ca14ec823d7
+
+**Person person = new Person();这句话到底做了什么事情呢？** 
+1.javac编译.java源文件形成.class字节码文件; 
+2.new  Person() 对象时， 先检查有没有父类， 有父类， 类加载器(ClassLoader)先将父类的Class文件读入内存， 创建一个java.lang.Class对象，然后加载子类，类加载器将子类的Class文件读入内存，创建一个java.lang.Class对象;
+3.先初始化父类的静态属性，再初始化父类的静态代码块； 
+4.再初始化子类的静态属性，再初始化子类的静态代码； 
+5.在堆内存中分配内存空间，分配内存地址，此时是因为父类的特有属性才在堆内存中为父类对象分配空间。 
+6.初始化父类的特有属性。 
+7.初始化父类的构造代码块。 
+8.初始化父类对象相应的构造方法。 
+9.在堆内存中分配内存空间，分配内存地址，此时是因为子类的特有属性才在堆内存中为子类对象分配空间的。 
+10.初始化子类的特有属性。 
+11.初始化子类的构造代码块。 
+12.初始化子类相应的构造方法。 
+13.将子类的内存地址赋值给栈中的引用对象。
+
+
 
 #### 参考链接：
 

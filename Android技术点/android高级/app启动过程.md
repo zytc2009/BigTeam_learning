@@ -77,7 +77,7 @@ public final void bindApplication(String processName, ApplicationInfo appInfo ..
 }
 
 //真正的创建Application，又回到了ActivityThread类
-ActivityThread类:
+ActivityThread 类:
 private void handleBindApplication(AppBindData data) {
     ...
     mInstrumentation = (Instrumentation)

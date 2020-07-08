@@ -201,31 +201,7 @@
 >
 > 1. 要深拷贝，得注意对象的内部对象，也需要clone
 
-#### Java GC机制（可达性分析法，引用计数法）
 
-> 1. 引用计数法：
->
-> 是垃圾收集的早期策略，在这个方法中，堆中每个对象都有一个引用计数，每当有一个地方引用他时，引用计数值就+1,当引用失效时，引用计数值就-1，任何时刻引用计数值为0的对象就是可以被回收，当一个对象被垃圾收集时，被它引用 的对象引用计数值就-1，所以在这种方法中一个对象被垃圾收集会导致后续其他对象的垃圾收集行动。
->
-> 优点：判定效率高；
->
-> 缺点：不完全准确，当两个对象相互引用的时候就无法回收，导致内存泄漏。
->
-> 1. 可达性分析：
->
->  这个算法的基本思路就是通过一系列名为"GC Roots"的对象作为起始点，从这些节点开始向下搜索，搜索所走过的路径称为引用链(Reference Chain)，当一个对象到GC Roots没有任何引用链相连时，则证明此对象是不可用的，比如对象object1, object2, object3是相互引用，但它们到GC Roots是不可达的，所以它们将会判定为是可回收对象。
->
-> 1. 在Java语言里，可作为GC Roots对象的包括如下几种：
->
-> a,虚拟机栈(栈桢中的本地变量表)中的引用的对象
->
-> b,方法区中的类静态属性引用的对象
->
-> c,方法区中的常量引用的对象
->
-> d,本地方法栈中JNI的引用的对象 
->
-> <https://blog.csdn.net/qq_34996727/article/details/80672853>
 
 #### Java对象的完整生命周期
 
@@ -244,12 +220,6 @@
 > 7).对象空间重分配阶段(De-allocated)
 >
 > <https://blog.csdn.net/XiaoArea/article/details/87873727>
-
-#### JVM内存模型
-
-![img](https://upload-images.jianshu.io/upload_images/1592745-3f82fafa66408ed9.png?imageMogr2/auto-orient/strip|imageView2/2/w/727/format/webp)
-
-> <https://www.jianshu.com/p/0ecf020614cb>
 
 #### 进程间通信
 
@@ -291,13 +261,7 @@
 >
 > 套接字也是一种进程间通信机制，与其他通信机制不同的是，它可用于不同机器间的进程通信。
 
-#### JVM类加载机制
 
-> 类从被加载到虚拟机内存中开始，到卸载出内存为止，它的整个生命周期包括：加载（Loading）、验证（Verification）、准备（Preparation）、解析（Resolution）、初始化（Initialization）、使用（Using）和卸载（Unloading）7个阶段。其中验证、准备、解析3个部分统称为连接（Linking），这7个阶段的发生顺序如图：
->
-> ![这里写图片描述](https://img-blog.csdn.net/20170907001317206?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvU2lsZW5jZU9P/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast)
->
-> <https://blog.csdn.net/SilenceOO/article/details/77876123>
 
 #### Java引用类型
 
@@ -315,9 +279,11 @@
 >
 > <https://www.cnblogs.com/baxianhua/p/10271830.html>
 
-**重写equals方法的要求：**1、自反性：对于任何非空引用x，x.equals(x)应该返回true。2、对称性：对于任何引用x和y，如果x.equals(y)返回true，那么y.equals(x)也应该返回true。3、传递性：对于任何引用x、y和z，如果x.equals(y)返回true，y.equals(z)返回true，那么x.equals(z)也应该返回true。4、一致性：如果x和y引用的对象没有发生变化，那么反复调用x.equals(y)应该返回同样的结果。5、非空性：对于任意非空引用x，x.equals(null)应该返回false。
+#### 重写equals方法的要求
 
-**类的双亲委托机制**：当某个特定的类加载器在接收到加载类的请求时，首先将该加载任务发送给父类加载器，若父类加载器仍有父类，则继续向上追溯，直到最高级。如果最高级父类能够加载到该类，则成功返回，否则由其子类进行加载。以此类推，如果到最后一个子类还不能成功加载，则抛出一个异常。作用：可以保证java核心库或第三方库的安全（防止低一级加载器加载的类覆盖高级加载器加载的类）
+1、自反性：对于任何非空引用x，x.equals(x)应该返回true。2、对称性：对于任何引用x和y，如果x.equals(y)返回true，那么y.equals(x)也应该返回true。3、传递性：对于任何引用x、y和z，如果x.equals(y)返回true，y.equals(z)返回true，那么x.equals(z)也应该返回true。4、一致性：如果x和y引用的对象没有发生变化，那么反复调用x.equals(y)应该返回同样的结果。5、非空性：对于任意非空引用x，x.equals(null)应该返回false。
+
+
 
 #### 动态库和静态库的区别
 

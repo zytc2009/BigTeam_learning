@@ -35,7 +35,7 @@
 
 #### 6) [java反射](java基础/java反射.md)
 
-#### 7）[java注解](java基础/java注解.md)
+#### 7) [java注解](java基础/java注解.md)
 
 
 
@@ -51,9 +51,9 @@
 
 ​    [AndroidStudio日常开发实用技巧](studio优化/AndroidStudio日常开发实用技巧.md)
 
-#####      											（1）优化工具
+#####      											 （1）优化工具
 
-#####            																					       Analyze APK
+#####            																					       	   Analyze APK
 
 #### 							 2）gradle使用及优化
 
@@ -63,41 +63,40 @@
 
 ### 3、Android高级
 
-#### 							1）[知识点](android高级/Android高级知识点.md)
-#### 							2）[apk瘦包](android高级/apk瘦身.md)
+1）[知识点](android高级/Android高级知识点.md)
 
-#### 			3）[异常分析优化](android高级/异常分析优化.md)
+2）[apk瘦包](android高级/apk瘦身.md)
 
-#### 4）[apt实践](https://juejin.im/post/5edce4e3e51d45785e00a221)
+3）[异常分析优化](android高级/异常分析优化.md)
 
-#### 5）[gc回收机制](android高级/gc回收时机.md)
+4）[apt实践](https://juejin.im/post/5edce4e3e51d45785e00a221)
 
-#### 6）studio使用优化
+5）[java虚拟机](android高级/java虚拟机.md)
 
-#### 7）[app启动过程](android高级/app启动过程.md)
+6）studio使用优化
 
-#### 8)  [权限获取](android高级/权限分享材料.md)
+7）[app启动过程](android高级/app启动过程.md)
 
-#### 9) [app稳定性](android高级/app稳定性.md)
+8)  [权限获取](android高级/权限分享材料.md)
 
-#### 10) [自定义事件总线](android高级/自定义事件总线的演化.md)
+9) [app稳定性](android高级/app稳定性.md)
+
+10) [自定义事件总线](android高级/自定义事件总线的演化.md)
 
 
 
 ### 4、性能优化
 ​     [性能优化简介](性能优化/README.md)
 
-#### 1）[Android启动速度优化](性能优化/启动优化.md)
+  1）[Android启动速度优化](性能优化/启动优化.md)
 
-#### 2 )  [UI优化总结](ui优化/UI优化.md)
+  2 )  [UI优化总结](ui优化/UI优化.md)
 
-#### 3）[UI渲染优化](性能优化/UI渲染优化.md)
+  3）[UI渲染优化](性能优化/UI渲染优化.md)
 
-#### 4) [卡顿优化](性能优化/Android卡顿分析.md)
+  4) [卡顿优化](性能优化/Android卡顿分析.md)
 
-#### 5）性能优化工具：TraceView、Systrace、调试GPU过度绘制 & GPU呈现模式分析、Hierarchy Viewer、MAT、Memory Monitor & Heap Viewer & Allocation Tracker、LeakCanary、Lint。
-
-#### 6）[Multidex流程](性能优化/Multidex流程.md)
+####   5）性能优化工具：TraceView、Systrace、调试GPU过度绘制 & GPU呈现模式分析、Hierarchy Viewer、MAT、Memory Monitor & Heap Viewer & Allocation Tracker、LeakCanary、Lint。
 
 
 
@@ -116,6 +115,8 @@
 ### 6、电量分析和优化 
 
 ​      [电量优化](性能优化/电量优化.md)
+
+
 
 ### 8、[常见错误分析和处理](常见错误处理.md)
 
@@ -142,19 +143,25 @@
 
 ### 1、设计模式
 
-​	[常用设计模式](设计模式/设计模式.md)
+​     [设计模式](../面试题/设计模式.md)
 
-​	[MVC,MVP,MVVM,CLEAN](设计模式/设计模式.md)
+​	 [MVC,MVP,MVVM,CLEAN](设计模式/设计模式.md)
 
 ### 2、AOP
 
+​    [AOP面向切面编程](设计模式\AOP\AOP面向切面编程.md)
+
 ​	[AOP编程实践](https://github.com/zytc2009/Demo_Aop)
+
+
 
 ## 五、组件化和插件化
 
 ### 1.插件化
 
    [插件化:DynamicLoad和DroidPlugin](组件化和插件/插件.md)
+
+
 
 ### 2.组件化
 
@@ -166,7 +173,13 @@
 
  [组件化框架设计和实践](组件化和插件/组件化框架设计和实践.md)
 
+  [Multidex流程和优化方案](组件化和插件/Multidex流程.md)
+
+
+
 ####  3.JetPack
+
+
 
 
 

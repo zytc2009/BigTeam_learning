@@ -168,3 +168,194 @@ private static List<MultiDexExtractor.ExtractedDex> loadExistingExtractions(Cont
 
 
 
+### 异步加载方案,主要针对5.0以下版本
+
+其实前面的操作都是为了这一步操作的，无论将Dex分成什么样，如果不能异步加载，就解决不了ANR和加载白屏的问题，所以异步加载是一个重点。
+
+异步加载主要问题就是：如何避免在其他Dex文件未加载完成时，造成的ClassNotFoundException问题？
+
+美团给出的解决方案是替换Instrumentation，但是博客中未给出具体实现，我对这个技术点进行了简单的实现，Demo在这里[MultiDexAsyncLoad](https://link.jianshu.com?t=https://github.com/ZhaoKaiQiang/MultiDexAsyncLoad)，对ActivityThread的反射用的是携程的解决方案。
+
+首先继承自Instrumentation，因为这一块需要涉及到Activity的启动过程，不清楚的可以去看[启动过程](../android高级/app启动过程.md)的内容
+
+
+
+```java
+public class MeituanInstrumentation extends Instrumentation {
+
+    private List<String> mByPassActivityClassNameList;
+
+    public MeituanInstrumentation() {
+        mByPassActivityClassNameList = new ArrayList<>();
+    }
+
+    @Override
+    public Activity newActivity(ClassLoader cl, String className, Intent intent) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+        if (intent.getComponent() != null) {
+            className = intent.getComponent().getClassName();
+        }
+
+        boolean shouldInterrupted = !MeituanApplication.isDexAvailable();
+        if (mByPassActivityClassNameList.contains(className)) {
+            shouldInterrupted = false;
+        }
+        if (shouldInterrupted) {
+            className = WaitingActivity.class.getName();
+        } else {
+            mByPassActivityClassNameList.add(className);
+        }
+        return super.newActivity(cl, className, intent);
+    }
+}
+```
+
+至于为什么重写了newActivity()，是因为在启动Activity的时候，会经过这个方法，所以我们在这里可以进行劫持，如果其他Dex文件还未异步加载完，就跳转到Main Dex中的一个等待Activity——WaitingActivity。
+
+
+
+```csharp
+ private Activity performLaunchActivity(ActivityClientRecord r, Intent customIntent) {
+        ActivityInfo aInfo = r.activityInfo;
+        if (r.packageInfo == null) {
+            r.packageInfo = getPackageInfo(aInfo.applicationInfo, r.compatInfo,
+                    Context.CONTEXT_INCLUDE_CODE);
+        }
+
+      Activity activity = null;
+        try {
+            java.lang.ClassLoader cl = r.packageInfo.getClassLoader();
+            
+            activity = mInstrumentation.newActivity(
+                    cl, component.getClassName(), r.intent);
+      
+         } catch (Exception e) {
+        }
+   }
+```
+
+在WaitingActivity中可以一直轮训，等待异步加载完成，然后跳转至目标Activity。
+
+```java
+public class WaitingActivity extends BaseActivity {
+    private Timer timer;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_wait);
+        waitForDexAvailable();
+    }
+
+    private void waitForDexAvailable() {
+        final Intent intent = getIntent();
+        final String className = intent.getStringExtra(TAG_TARGET);
+
+        timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                while (!MeituanApplication.isDexAvailable()) {
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    Log.d("TAG", "waiting");
+                }
+                intent.setClassName(getPackageName(), className);
+                startActivity(intent);
+                finish();
+            }
+        }, 0);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (timer != null) {
+            timer.cancel();
+        }
+    }
+}
+```
+
+异步加载Dex文件放在什么时候合适呢？
+
+我放在了Application.onCreate()中
+
+
+
+```java
+public class MeituanApplication extends Application {
+
+    private static final String TAG = "MeituanApplication";
+    private static boolean isDexAvailable = false;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        loadOtherDexFile();
+    }
+
+    private void loadOtherDexFile() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                MultiDex.install(MeituanApplication.this);
+                isDexAvailable = true;
+            }
+        }).start();
+    }
+
+    public static boolean isDexAvailable() {
+        return isDexAvailable;
+    }
+}
+```
+
+那么替换系统默认的Instrumentation在什么时候呢？
+
+当SplashActivity跳转到MainActivity之后，再进行替换比较合适，于是
+
+
+
+```java
+public class MainActivity extends BaseActivity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        MeituanApplication.attachInstrumentation();
+    }
+}
+```
+
+MeituanApplication.attachInstrumentation()实际就是通过反射替换默认的Instrumentation
+
+
+
+```java
+public class MeituanApplication extends Application {
+
+   public static void attachInstrumentation() {
+       try {
+           SysHacks.defineAndVerify();
+           MeituanInstrumentation meiTuanInstrumentation = new MeituanInstrumentation();
+           Object activityThread = AndroidHack.getActivityThread();
+           Field mInstrumentation = activityThread.getClass().getDeclaredField("mInstrumentation");
+           mInstrumentation.setAccessible(true);
+           mInstrumentation.set(activityThread, meiTuanInstrumentation);
+       } catch (Exception e) {
+           e.printStackTrace();
+       }
+   }
+}
+```
+
+
+
+参考文章：
+
+1. [关于MultiDex方案的一点研究与思考](https://www.jianshu.com/p/33f22b21ef1e)

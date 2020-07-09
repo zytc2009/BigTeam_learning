@@ -425,3 +425,117 @@ MessageQueue：
 }
 ```
 
+#### 消息机制
+
+ActivityThread 通过 ApplicationThread 和 AMS 进行进程间通讯，AMS 以进程间通信的方式完成 ActivityThread 的请求后会回调 ApplicationThread 中的 Binder 方法，然后 ApplicationThread 会向 H 发送消息，H 收到消息后会将 ApplicationThread 中的逻辑切换到 ActivityThread 中去执行，即切换到主线程中去执行，这个过程就是主线程的消息循环模型。
+
+#### 主线程有死循环如何执行其他事物？
+
+主线程进入是循环之前创建了Binder线程
+
+```
+public static void main(String[] args) {
+//创建Looper和MessageQueue对象，用于处理主线程的消息
+ Looper.prepareMainLooper();
+ 
+ //创建ActivityThread对象
+ ActivityThread thread = new ActivityThread(); 
+
+ //建立Binder通道 (创建新线程)
+ thread.attach(false);
+
+ Looper.loop(); //消息循环运行
+ throw new RuntimeException("Main thread loop unexpectedly exited");
+```
+
+Activity的生命周期都是依靠主线程的Looper.loop，当收到不同Message时则采用相应措施
+
+thread.attach(false)方法函数中便会创建一个Binder线程（具体是指ApplicationThread，Binder的服务端，用于接收系统服务AMS发送来的事件），该Binder线程通过Handler将Message发送给主线程。
+
+另外new ActivityThread()的时候同时会初始化它的一个H类型的成员，H是一个继承了Handler的类。此时的结果就是：在主线程开启loop死循环之前，已经启动binder线程，并且准备好了一个名为H的Handler，那么接下来在主线程死循环之外做一些事务处理就很简单了，只需要通过binder线程向H发送消息即可，比如发送 H.LAUNCH_ACTIVITY 消息就是通知主线程调用Activity.onCreate() ，当然不是直接调用，H收到消息后会进行一系列复杂的函数调用最终调用到Activity.onCreate()。
+
+ 
+
+#### Handler导致的内存溢出问题？
+
+一般我们使用匿名内部类的方式创建Handler实例。Java中非静态的内部类默认持有外部类的引用。所以handler中会持有context。当handler发送一个延时消息时该消息会持有handler对象，而msg会被加入到消息队列中一直存在，当页面销毁时Gc无法回收actvity导致内存泄漏。
+
+解决方法：要在Activity销毁的时候移除Messages 2 匿名内部类导致的泄露改为匿名静态内部类，并且对上下文或者Activity使用弱引用。
+
+#### HandlerThread原理？
+
+HandlerThread是一个集成了Looper和MessageQueue的线程。当启动HandlerThread时会同时生成Looper和MessageQueue然后等待消息处理。
+
+好处是开发者不需要自己创建和维护Looper。
+
+  总结：  
+
+1． handerThread必须先start后才能通过getLooper获取Looper对象， getLooper（）如果没有创建好looper会阻塞的。
+
+2． 在调用getThreadHandler()方法和getLooper()方法之前，必去确保线程已经启动了（调用了start()方法），否则线程会进入等待状态，直到在run()方法内部mLooper对象被赋值；
+
+3． 在Looper开启循环（调用loop()方法）之前，会执行onLooperPrepared()方法，它默认是一个空实现，可在子类中按需覆写实现，注意，它的执行逻辑是在子线程，所以不要进行UI操作；
+
+4． quit方法和quitSafely方法调用的是Looper对象的相应方法，其实最终调用的都是Looper内部MessageQueue的quit方法，
+
+ 
+
+  具体使用：
+
+// 步骤1：创建HandlerThread实例对象
+
+// 传入参数 = 线程名字，作用 = 标记该线程
+
+  HandlerThread mHandlerThread = new HandlerThread("handlerThread");
+
+ 
+
+// 步骤2：启动线程
+
+  mHandlerThread.start();
+
+ 
+
+// 步骤3：创建工作线程Handler & 复写handleMessage（）
+
+// 作用：关联HandlerThread的Looper对象、实现消息处理操作 & 与其他线程进行通信
+
+// 注：消息处理操作（HandlerMessage（））的执行线程 = mHandlerThread所创建的工作线程中执行
+
+ Handler workHandler = new Handler( handlerThread.getLooper() ) {
+
+​      @Override
+
+​      public boolean handleMessage(Message msg) {
+
+​        ...//消息处理
+
+​        return true;
+
+​      }
+
+​    });
+
+ 
+
+// 步骤4：使用工作线程Handler向工作线程的消息队列发送消息
+
+// 在工作线程中，当消息循环时取出对应消息 & 在工作线程执行相关操作
+
+ // a. 定义要发送的消息
+
+ Message msg = Message.obtain();
+
+ msg.what = 2; //消息的标识
+
+ msg.obj = "B"; // 消息的存放
+
+ // b. 通过Handler发送消息到其绑定的消息队列
+
+ workHandler.sendMessage(msg);
+
+ 
+
+// 步骤5：结束线程，即停止线程的消息循环
+
+ mHandlerThread.quit();

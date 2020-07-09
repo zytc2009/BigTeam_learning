@@ -10,6 +10,8 @@
 
 #### Activity生命周期
 
+![activity生命周期](..\images\activity生命周期.png)
+
 > onCreate - onStart - onResume - onPause - onStop - onRestart - onDestroy 
 >
 > 页面A启动页面B，生命周期如何联动？
@@ -28,7 +30,7 @@
 > D/SecondActivity: onResume----B
 > D/MainActivity: onStop--------A
 >
-> 然后点击返回键从B返回A
+> #### 然后点击返回键从B返回A
 >
 > D/SecondActivity: onPause-----BD/MainActivity: onRestart-----A D/MainActivity:  onStart-------AD/MainActivity: onResume------AD/SecondActivity: onStop------BD/SecondActivity: onDestroy---B
 >
@@ -37,6 +39,26 @@
 #### 异常情况下的Activity的生命周期 & 数据如何保存和恢复
 
 > 当系统配置发生变化后(比如屏幕旋转)，Activity 会被销毁，它的onPause、onStop、onDestroy会被调用，不过由于是在异常情况下终止的，系统会在调用onStop 方法之前调用 onSaveInstanceState 方法保存 Activity 的状态（UI状态和数据），在Activity 重建时，从onCreate 或onRestoreInstanceState 中获取保存的Activity的状态，重新恢复Activity。
+
+#### activity启动模式
+
+ standard模式：在这种模式下，activity默认会进入启动它的activity所属的任务栈中。这也是默认的一种模式
+
+ singleTop模式：栈顶复用模式（只有activity在顶部时复用）。如果新activity位于任务栈的栈顶的时候，activity不会被重新创建，同时它的onNewIntent方法会被回调。如果栈顶activity不是启动activity时，会和standard模式一样重写创建activity并加入栈中。
+
+使用场景：登录页，推送提示框，微信支付WxPayEntryActivity，WxEntryActiviy等
+
+ singleTask模式：栈内复用模式（整个栈中复用，复用时该activity之上的会出栈，使它成为栈顶）。只要activity在一个栈中存在，那么多次启动此activity不会被重新创建单例，系统会回调onNewIntent。这种模式可以称为单例模式，只会存在一种，有则直接从栈中调用，没有则创建并且压入栈中。复用时，该activity上面的activity被强制弹栈
+
+使用场景：主页面，WebView页面，扫一扫页面等
+
+ singleInstance模式：单实例模式。这种模式的activity只能单独地位于一个任务栈中，这种与singleTask有点类似，其实也是有则直接调用，没有则创建并且放入栈中，只不过singleTask是可以和其他的Activity放在同一个栈中，singleInstance则是只会将创建的Activity放在一个栈中，并且这个栈中只会有这一个Activity实例
+
+使用场景：系统luacher，来电显示，锁屏
+
+系统默认给一个app创建一个任务栈，如果activity启动模式 设置了如singleInstance时，会单独创建一个栈
+
+
 
 #### Android Service、IntentService，Service和组件间通信
 

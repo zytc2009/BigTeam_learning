@@ -1,5 +1,9 @@
 OkHttp使用：
 
+OkhttpClient 通过builder模式创建实例，OkHttpClient.newCall获取RealCall实例。调用ReallCall的excue或enqueue对同步或异步请求处理。Exectue或enqueue最终调用realCall中的getResponesWithInterceptorChain方法，通过链式调用从拦截链中返回请求结果。拦截链中依次调用用户连接器（通过addinterceptor添加的），重定向拦截器（RetryAndFollowUpInterceptor），桥接拦截器（BridgeInterceptor），缓存连接器（cacheInterceptor），连接拦截器（ConnectInterceptor），用户的网络拦截器（通过addNetworkInterceptor添加的），调用服务拦截器（callServerInterceptor）对请求一次处理与服务器建立连接后获取返回数据，再经过以上拦截器处理后返回给调用方。
+
+![okhttp流程](..\images\okhttp流程.png)
+
 ```
 //同步请求
 Response response = new OkHttpClient().newCall(request).execute();
@@ -123,6 +127,16 @@ procced方法并没有用for循环来遍历interceptors集合，而是重新new 
 该拦截器是链接客户端代码和网络代码的桥梁，它首先将客户端构建的Request对象信息构建成真正的网络请求;然后发起网络请求，最后就是讲服务器返回的消息封装成一个Response对象。
 
 ### CacheInterceptor简单分析
+
+okhttp提供缓存机制，用于缓存响应head和body，但默认是不开启缓存机制。
+
+okhttp中的缓存主要要在两个地方配置：
+
+第一，在构造okhttpclient时 设置缓存路径
+
+第二，在构造request时 配置缓存策略
+
+![okhttp_cache](..\images\okhttp_cache.png)
 
 > 请求头信息带上上次请求获取的Last-Modified时间，key值If-Modified-Since，请求/响应的头信息里面还有两个Header:If-None-Match/Etag。当第一次请求的时候，”响应头信息”里面有一个Etag的Header可以看做是资源的标识符。再次请求的时候，”请求头信息”会包含一个If-None-Match的头信息。此时服务器取得If-None-Match后会和资源的Etag进行比如，如果相同则说明资源没改动过，那么响应304，客户端可以使用缓存；否则返回200，并且将报文的主题返回给客户端（Etag的说明可以参考百度百科)
 >

@@ -159,7 +159,7 @@ ApplicationThreadProxy：ApplicationThread在AMS服务中的代理类，负责�
 
 （4）AMS知道了Launcher已经挂起之后，就可以放心的为新的Activity准备启动工作了，首先，APP肯定需要一个新的进程去进行运行，所以需要创建一个新进程，这个过程是需要Zygote参与的，AMS通过Socket去和Zygote协商，如果ProcessRecord为空或者它的thread为空，需要创建进程，那么就会fork自身，创建一个线程，新的进程会导入ActivityThread类，这就是每一个应用程序都有一个ActivityThread与之对应的原因；
 
-（5）进程创建好了，通过调用上述的ActivityThread的main方法，这是应用程序的入口，在这里创建主线程，创建ActivityThread对象，把ApplicationThread注册到AMS，然后开启消息循环队列，这也是主线程默认绑定Looper的原因；
+（5）进程创建好了，通过调用上述的ActivityThread的main方法，这是应用程序的入口，在这里创建主线程，创建ActivityThread对象，在attach方法把ApplicationThread注册到AMS，然后开启消息循环队列，这也是主线程默认绑定Looper的原因；
 
 （6）这时候，App还没有启动完，要永远记住，四大组建的启动都需要AMS去启动，必须将上述的应用进程信息注册到AMS中，AMS再在堆栈顶部取得要启动的Activity，通过一系列链式调用去完成App启动；
 
@@ -184,6 +184,8 @@ ActvityThread.attach()向ams报告，AMS添加消息BIND_APPLICATION到应用主
 > 提供应用上下文
 
 #### **activity启动**:
+
+ContextImpl的startActivity，然后内部会通过Instrumentation来尝试启动Activity，这是一个跨进程过程，它会调用ams的startActivity方法，当ams校验完activity的合法性后，会通过ApplicationThread回调到我们的进程，这也是一次跨进程过程，而applicationThread就是一个binder，回调逻辑是在binder线程池中完成的，所以需要通过Handler H将其切换到ui线程，第一个消息是LAUNCH_ACTIVITY，它对应handleLaunchActivity，在这个方法里完成了Activity的创建和启动，接着，在activity的onResume中，activity的内容将开始渲染到window上，然后开始绘制直到我们看见
 
 **过程**：创建activity对象，准备好application，创建ContextImpl，attach上下文，生命周期回调
 

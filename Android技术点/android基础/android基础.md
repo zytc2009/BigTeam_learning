@@ -6,11 +6,11 @@
 
 [svg矢量动画调研](svg矢量动画调研.md)
 
-[容器类](容器类.md)
-
 [handler](handler.md)
 
-[activity展示和ui刷新流程](组件展示流程.md)
+[activity展示和view绘制原理](组件展示流程.md)
+
+[recyclerView原理，和listView对比](recyclerView和listView对比.md)
 
 #### 写一个死锁，死锁是怎样产生的，怎样防止死锁
 

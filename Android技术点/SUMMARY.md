@@ -43,7 +43,9 @@
 
 ### 1、[Android基础](android基础/android基础.md)
 
-​    [activity展示和ui刷新流程](android基础/组件展示流程.md)
+​    [activity展示和view绘制原理](android基础/组件展示流程.md)
+
+​    [MVVM实战](android基础/mvvm实战.md)
 
 ### 2、开发工具
 
@@ -75,7 +77,7 @@
 
 6）studio使用优化
 
-7）[app启动过程](android高级/app启动过程.md)
+7）[app和activity启动启动过程](android高级/app启动过程.md)
 
 8)  [权限获取](android高级/权限分享材料.md)
 

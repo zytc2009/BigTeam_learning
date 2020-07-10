@@ -262,8 +262,6 @@ public static void setImage(ImageView view, String url){
      tools:ignore="MissingConstraints" />
 ```
 
-这样我们就完成了数据的展示刷新，后续就可以类似的处理RecylerView和ViewPager了，我们只以RecylerView为例说明
-
 **BindingAdapter使用要谨慎**，它可以覆盖系统的方法的
 
 ```
@@ -279,6 +277,8 @@ public static void setText(TextView view, String text){
 ![bindadapter](..\images\bindadapter.png)
 
   开不开心，意不意外？
+
+这样我们就完成了数据的展示刷新，后续就可以类似的处理RecylerView和ViewPager了，我们只以RecylerView为例说明
 
 #### RecylerView的刷新
 

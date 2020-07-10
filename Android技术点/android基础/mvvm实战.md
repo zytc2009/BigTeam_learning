@@ -264,6 +264,22 @@ public static void setImage(ImageView view, String url){
 
 这样我们就完成了数据的展示刷新，后续就可以类似的处理RecylerView和ViewPager了，我们只以RecylerView为例说明
 
+**BindingAdapter使用要谨慎**，它可以覆盖系统的方法的
+
+```
+@BindingAdapter("android:text")
+public static void setText(TextView view, String text){
+    //将替换所有使用binding的页面的文本展示
+    view.setText("恭喜您中了一个亿现金！");
+}
+```
+
+于是就出现了这样的画面：
+
+![bindadapter](..\images\bindadapter.png)
+
+  开不开心，意不意外？
+
 #### RecylerView的刷新
 
 数据类，布局不介绍了
@@ -350,6 +366,142 @@ activityMainBinding.recyclerView.setAdapter(adapter);
 ```
 
 搞定！运行，神奇的一幕就出来了。。。
+
+#### 事件处理
+
+页面出来了，我们就处理完model到view的绑定了，然后研究怎样添加事件处理
+
+事件的处理，我们一般是在ViewModel中进行，所以关联VM
+
+```
+布局中添加声明：
+<import type="com.app.template.mvvm.MainViewModel"/>
+ <variable
+      name="viewModel"
+      type="com.app.template.mvvm.MainViewModel"
+       />
+控件添加事件：
+    android:onClick="@{viewModel.onClick}"
+    
+然后在ViewModel中添加点击事件，我直接让VM实现View.OnClickListener，然后增加onClick方法
+    public void onClick(View view){
+        Log.d("MainDataBean", "onClick() ");
+    }
+    
+最后关键一步，binding对象关联viewModel，这样你的声明才真正起作用：
+activityMainBinding.setViewModel(mainViewModel);
+```
+
+如果想自定义处理，传递参数怎么办？
+
+```
+theView只是临时代指当前view
+<ImageView
+     android:onClick="@{(theView) -> viewModel.onClick(theView, mainData.image)}" />
+
+//添加自定义方法，自定义处理
+public void onClick(View view, String data){
+    Log.d("MainDataBean", "onClick() data="+data);
+}
+```
+
+#### ViewStub支持
+
+因为是异步加载的，所以主要是确认view的binding时机和数据刷新时机
+
+```
+新建布局，两个文本：
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <data>
+        <import type="com.app.template.mvvm.MainDataBean"/>
+        
+        <variable
+            name="mainData"
+            type="com.app.template.mvvm.MainDataBean"
+            />
+    </data>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/tv_sub_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@{mainData.title}"/>
+
+        <TextView
+            android:id="@+id/tv_sub_desc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@{mainData.desc}"/>
+    </LinearLayout>
+</layout>
+
+主页面布局添加：
+<ViewStub
+    android:id="@+id/view_stub"
+    android:layout="@layout/main_stub_view"
+    app:mainData="@{mainData}" />//把主页面的数据给子view，app后面的mainData是子view中的声明
+```
+
+然后主页面调用：
+
+```
+activityMainBinding.viewStub.getViewStub().inflate();
+```
+
+如果你想监听状态activityMainBinding.viewStub.setOnInflateListener(new ViewStub.OnInflateListener()）;
+
+#### include布局支持
+
+基本跟viewStub一致，只加上app:mainData="@{mainData}做数据传递
+
+```
+页面布局添加，控件id跟主页面已有id不要重复，否则会有问题：
+<include
+    android:id="@+id/main_include_view"
+    layout="@layout/main_stub_view"
+    app:mainData="@{mainData}" />
+```
+
+#### 双向数据绑定
+
+如果页面需要关注组件变化，怎末办呢？比如我有一个checkBox，用户点击可以修改状态，如何处理呢？
+
+```
+<CheckBox
+    android:id="@+id/checkbox"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:checked="@={mainData.rememberMe}"
+    />
+    
+@={} 表示法（其中重要的是包含“=”符号）可接收属性的数据更改并同时监听用户更新。
+```
+
+我们在MainDataBean中添加属性rememberMe，注解声明属性需要bind
+
+```
+boolean rememberMe;
+@Bindable
+public boolean isRememberMe() {
+    return rememberMe;
+}
+
+public void setRememberMe(boolean rememberMe) {
+    if(rememberMe == this.rememberMe){//我这里为了防止死循环
+        return;
+    }
+    this.rememberMe = rememberMe;
+    notifyPropertyChanged(BR.rememberMe);
+}
+```
+
+常用的功能已经演示完了，其他的问题，遇到再解决
 
 有不清楚的，可以看代码：
 

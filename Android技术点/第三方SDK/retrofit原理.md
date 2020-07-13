@@ -46,6 +46,20 @@ public interface ApiServise {
 }
 ```
 
+> 常用参数注解：
+>
+> @GET、@POST：确定请求方式
+>
+> @Path:请求URL的字符替代
+>
+> @Query:要传递的参数
+>
+> @QueryMap:包含多个@Query注解参数
+>
+> @Body：添加实体类对象
+>
+> @FormUrlEncoded:URL编码
+
 然后我们开测试一下，记得开网络权限
 
 我们现在只是声明一个请求方法，他返回Call对象, 然后我们可以选择同步或异步调用，同Okhttp使用，注意一点，如果是同步调用，记得开线程。

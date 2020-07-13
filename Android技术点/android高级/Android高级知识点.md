@@ -59,18 +59,6 @@
 > 每个Android的进程，只能运行在自己进程所拥有的虚拟地址空间。对于用户空间，不同进程之间彼此是不能共享的，而内核空间却是可共享的。Client进程向Server进程通信，就是利用进程间可共享的内核内存空间来完成底层通信工作的，Client端与Server端进程往往采用ioctl等方法跟内核空间的驱动进行交互。
 >
 
-#### 事件分发
-
-> Activity => ViewGroup => View 的顺序进行事件分发。
->
-> onTouch() 执行总优先于 onClick()。
->
-> - dispatchTouchEvent()
-> - onTouchEvent()
-> - onInterceptTouchEvent()
-
-> https://www.jianshu.com/p/d3758eef1f72
-
 #### LeakCanary的工作过程以及原理
 
 > LeakCanary 主要利用了弱引用的对象, 当 GC 回收了这个对象后, 会被放进 ReferenceQueue 中;
@@ -393,11 +381,6 @@ Retryable.Result ensureGone(final KeyedWeakReference reference, final long watch
 >
 > https://blog.csdn.net/github_33304260/article/details/70213300
 
-#### 使用Glide的时候with方法中传入Activity的上下文和Application的上下文有什么区别？
-
-> 生命周期不同，activty是跟页面生命周期一致；Application是跟app进程一致。
-> https://www.jianshu.com/p/bb08d5fb97ae
-
 #### Retrofit的实现与原理
 
 > 1. 性能最好，处理最快
@@ -456,26 +439,6 @@ Retryable.Result ensureGone(final KeyedWeakReference reference, final long watch
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20190812225005772.png)
 
 > https://blog.csdn.net/xiangzhihong8/article/details/99333594
-
-#### ButterKnife实现原理
-
-> ButterKnife 是一个 Android 系统的 View 注入框架，能够通过『注解』的方式来绑定 View 的属性或方法。
->
-> 比如使用它能够减少 findViewById() 的书写，使代码更为简洁明了，同时不消耗额外的性能。
->
-> 当然这样也有个缺点，就是可读性会差一些，好在 ButterKnife 比较简单，学习难度也不大。
-
-> 流程：
-> 1. 扫描 ButterKnife 注解。
-> 2. 根据注解，生成 Java 类。
-> 3. 动态注入。
->
-> 最后当我们执行 ButterKnife.bind(this) 时，ButterKnife 会加载上面生成的类，然后调用其 bind 方法。
->
-> 这里首先调用了 findRequiredView 去寻找 R.id.text1 所对应的控件，其实相当于我们的 findViewById()
-> 其次调用 castView，相当于类型转换，把找到的 View 转化为 TextView 类型
-> 至此，我们就完成了一次 ButterKnife 的工作流程。
-> https://www.cnblogs.com/wgha/p/5897857.html
 
 #### RxJava实现原理、设计模式
 
@@ -547,26 +510,7 @@ Retryable.Result ensureGone(final KeyedWeakReference reference, final long watch
 > 下面是找的一张图片：
 > ![这里写图片描述](https://img-blog.csdn.net/20180315113222496?watermark/2/text/Ly9ibG9nLmNzZG4ubmV0L0Nob25nWHVlOTE=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70)
 
-#### App启动加载过程
 
-> 1. 点击图标后Launcher进程会通过Binder机制向AMS发起打开Activity的请求【IPC->Binder】
-> 2. AMS会通过ActivityStarter处理Intent和Flag(启动模式相关的内容)，然后通过Socket通知zygote进程【IPC->Socket】
-> 3. zygote进程会进行孵化(虚拟机和资源的复制)，然后fork出新进程
-> 4. 然后zygote进程会通过invokeDynamicMain()方法调用到ActivityThread的main方法【ActivityThread】
-> 5. main()中关于Handler相关的工作是：主线程Looper和Handler的创建、开启主线程Looper的消息循环；
-> 6. main()另一工作就是创建ActivityThread对象，执行attach方法。【Application、ContentProvider】
->
->
-> > 1. 先通过AMS执行bindApplication方法
-> > 2. 内部会创建属于Application的ContextImpl对象，并且创建Application对象，建立两者的联系
-> > 3. 创建ContentProvider，执行其onCreate()方法，并进行发布相关操作(前提是该app有ContentProvider)
-> > 4. 执行Application的onCreate()方法
-
-#### Activity启动过程
-
-> ![img](https://upload-images.jianshu.io/upload_images/10018045-030ad27bf157e330.png)
-> 具体可以先看下链接：
-> https://www.jianshu.com/p/7d0d548ebbb4
 
 #### GreenDao用法 & 原理。了解LitePal、OrmLite、DBFlow用法
 
@@ -604,54 +548,59 @@ Retryable.Result ensureGone(final KeyedWeakReference reference, final long watch
 
 #### ANR 定位和处理
 
+1.**产生原因**
+
+根本原因是：主线程被卡了，导致应用在 5 秒时间未响应用户的输入事件。 
+
+> 以下四个条件都可以造成ANR发生： 
+>
+> InputDispatching Timeout：5秒内无法响应屏幕触摸事件或键盘输入事件
+>
+> BroadcastQueue Timeout ：在执行前台广播（BroadcastReceiver）的onReceive()函数时10秒没有处理完成，后台为60秒。
+>
+> Service Timeout ：前台服务20秒内，后台服务在200秒内没有执行完毕。
+>
+> ContentProvider Timeout ：ContentProvider的publish在10s内没进行完
+
+很多种 ANR 错误出现的场景： 
+
+1） 主线程当中执行 IO/网络操作，容易阻塞。 
+
+2） 主线程当中执行了耗时的计算。----自定义控件的时候 onDraw 方法里面经常这么 
+
+做。
+
+（同时聊一聊自定义控件的性能优化：在 onDraw 里面创建对象容易导致内存抖动 
+
+---绘制动作会大量不断调用，产生大量垃圾对象导致 GC 很频繁就造成了内存抖动。）内存抖动就容易造成 UI 出现掉帧卡顿的问题 
+
+解决办法：
+
+1)因为 service 也是在主线程当中执行的，所以耗时操 
+
+作应该在 service 里面开启子线程来做。 
+
+2） 使用 AsyncTask 处理耗时的 IO 等操作。 
+
+3） 使 用 Thread 或 者 HandlerThread 时 ， 使 用 
+
+Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND) 或 者 
+
+java.lang.Thread.setPriority （int priority）设置优先级为后台优先级，这 
+
+样可以让其他的多线程并发消耗 CPU 的时间会减少，有利于主线程的处理。 
+
+4） Activity 的 onCreate 和 onResume 回调中尽量耗时的操作。 
+
+**2．定位分析**
+
 > 可以通过查看/data/anr/traces.txt 查看 ANR 信息。 
 >
-> 根本原因是：主线程被卡了，导致应用在 5 秒时间未响应用户的输入事件。 
->
-> 很多种 ANR 错误出现的场景： 
->
-> 1） 主线程当中执行 IO/网络操作，容易阻塞。 
->
-> 2） 主线程当中执行了耗时的计算。----自定义控件的时候 onDraw 方法里面经常这么 
->
-> 做。
->
-> （同时聊一聊自定义控件的性能优化：在 onDraw 里面创建对象容易导致内存抖动 
->
-> ---绘制动作会大量不断调用，产生大量垃圾对象导致 GC 很频繁就造成了内存抖动。）内存抖动就容易造成 UI 出现掉帧卡顿的问题 
->
-> 3） BroadCastReceiver 没有在 10 秒内完成处理。
->
-> 4） BroadCastReceiver 的 onReceived 代码中也要尽量减少耗时的操作，建议使用 
->
-> IntentService 处理。 
->
-> 5） Service 执行了耗时的操作，因为 service 也是在主线程当中执行的，所以耗时操 
->
-> 作应该在 service 里面开启子线程来做。 
->
-> 6） 使用 AsyncTask 处理耗时的 IO 等操作。 
->
-> 7） 使 用 Thread 或 者 HandlerThread 时 ， 使 用 
->
-> Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND) 或 者 
->
-> java.lang.Thread.setPriority （int priority）设置优先级为后台优先级，这 
->
-> 样可以让其他的多线程并发消耗 CPU 的时间会减少，有利于主线程的处理。 
->
-> 8） Activity 的 onCreate 和 onResume 回调中尽量耗时的操作。 
->
-> 9）导出trace文件：
->
 > 1. adb pull /data/anr/traces.txt d:/
+>
 > ```
-> 1、adb shell 
->
 > 2、cat  /data/anr/xxx   >/mnt/sdcard/yy/zz.txt   
->
 > 3、exit
->
 > 4、adb pull /mnt/sdcard/yy/zz.txt  d:  ,即可将文件导出到了d盘。
 > ```
 >
@@ -660,6 +609,34 @@ Retryable.Result ensureGone(final KeyedWeakReference reference, final long watch
 >    完成之后导出Zip包 解压出来 
 >
 >    在 /FS/data/anr/  目录中查看
+>
+> 使用检测违规操作的工具类**StrictMode**
+>
+>    线程策略 ThreadPolicy
+>
+> detectCustomSlowCalls:检测自定义耗时操作
+>
+> detectDiskReads:检测是否存在磁盘读取操作
+>
+> detectDiskWrites:检测是否存在磁盘写入操作
+>
+> detectNetWork：检测是否存在网络操作 
+>
+>   虚拟机策略 VmPolicy
+>
+> detectActivityLeacks:检测Activity否存在内存泄漏
+>
+> detectLeackedClosableObjects:检测是否存在未关闭的Closable对象泄露
+>
+> detectLeakedSqlLiteObjects:检测是否存在SQlite对象泄露
+>
+> setClassInstanceLimit:检测类实例个数是否超过限制。
+>
+>  在debug版本中使用，在Appliction或MainActivity的Oncreate中加入代码。
+>
+> StrictMode.setThreadPlolicy(…)
+>
+> StrictMode.setVmPolicy(…)
 
 #### [apk瘦包](apk瘦包/apk瘦包.md)
 
@@ -675,7 +652,23 @@ Retryable.Result ensureGone(final KeyedWeakReference reference, final long watch
 >
 > https://www.jianshu.com/p/fa6cfad8ccc2
 
-#### 用IDE如何分析内存泄漏？
+#### 哪些情况会导致内存泄漏，如何分析内存泄漏
+
+常见的产生内存泄漏的情况如下所示：
+
+-  持有静态的Context（Activity）引用。
+-  持有静态的View引用，
+-  内部类&匿名内部类实例无法释放（有延迟时间等等），而内部类又持有外部类的强引用，导致外部类无法释放，这种匿名内部类常见于监听器、Handler、Thread、TimerTask
+-  资源使用完成后没有关闭，例如：BraodcastReceiver，ContentObserver，File，Cursor，Stream，Bitmap。
+-  不正确的单例模式，比如单例持有Activity。
+- 属性动画导致内存泄漏：在onDestroy中没有停止动画，导致view中持有了Activity对象
+-  集合类内存泄漏，如果一个集合类是静态的（缓存HashMap），只有添加方法，没有对应的删除方法，会导致引用无法被释放，引发内存泄漏。
+-  错误的覆写了finalize()方法，finalize()方法执行执行不确定，可能会导致引用无法被释放。
+-  ListView中Adapter导致内存泄漏：不使用缓存只依靠getView。导致每次都要初始化item
+
+#### 如何分析内存泄漏？
+
+查找内存泄漏可以使用Android Profiler工具或者利用LeakCanary工具。
 
 > （1）、把java应用程序使用的heap dump下来。
 >
@@ -844,10 +837,6 @@ Retryable.Result ensureGone(final KeyedWeakReference reference, final long watch
 
 需要借助内存分析工具防止内存泄漏。
 
-#### RecyclerView和ListView的性能对比
-
-> https://www.jianshu.com/p/171b20389634
-
 #### ListView的优化
 
 > ①、如果item中有图片一定要用异步加载。而且里面的图片尽量要用缩略图或者小图。
@@ -857,18 +846,6 @@ Retryable.Result ensureGone(final KeyedWeakReference reference, final long watch
 > ③、要对数据进行分页加载。
 >
 > ④、item的布局层级要越少越好。
-
-#### RecycleView优化
-
-> 给item设置点击事件和长按事件。
->
-> 给item中的控件设置点击事件和长按事件。
-
-#### View渲染
-
-> <img src="https://img-blog.csdn.net/20180525122509697?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2NzZG4xMTI1NTUwMjI1/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70" style="zoom:67%;" />
->
-> https://blog.csdn.net/csdn1125550225/article/details/80401365
 
 #### Bitmap如何处理大图，如一张30M的大图，如何预防OOM？
 

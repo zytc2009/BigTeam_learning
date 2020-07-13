@@ -1,5 +1,3 @@
-###android基础
-
 [TOC]
 
 #### Application作用
@@ -58,12 +56,112 @@
 
 系统默认给一个app创建一个任务栈，如果activity启动模式 设置了如singleInstance时，会单独创建一个栈
 
-
-
 #### Android Service、IntentService，Service和组件间通信
 
 > IntentService是继承Service的，所以IntentService是Service的子类。IntentService 封装了 HandlerThread 和 Handler。
 > IntentService是一个特殊的Service类，是实现了多线程处理异步请求的一个服务类，在handleIntent方法中进行耗时的操作，如果有多个耗时的操作任务，会按照顺序去一个一个的执行，执行完一个关闭一个。
+
+####  普通service
+
+启动方式：
+
+1 startService／stopService
+
+生命周期：onCreate—>onStartCommond()àonDestroy
+
+多次调用startservice开启服务onCreate只在创建时调用一次，	onStartCommond会多次调用
+
+2 bindService ／unbindService（ServiceConnection）
+
+生命周期：onCreate->onBind()àonUnBind()àonDestroy
+
+   多次调用bindService()时 onCreate和onBind只调用一次
+
+可以通过Ibinder接口回去service实例从而能调用service中方法。 
+
+```
+public class TestTwoService extends Service{ 
+  //client 可以通过Binder获取Service实例
+  public class MyBinder extends Binder {
+     public TestTwoService getService() {
+      return TestTwoService.this;
+     }
+  }
+
+  //通过binder实现调用者client与Service之间的通信
+  private MyBinder binder = new MyBinder();
+  private final Random generator = new Random();
+  @Override
+  public void onCreate() {
+    super.onCreate();
+  }
+
+  @Override
+  public int onStartCommand(Intent intent, int flags, int startId) {
+    return START_NOT_STICKY;
+  }
+
+  @Nullable
+  @Override
+  public IBinder onBind(Intent intent) {
+    return binder;
+  }
+
+  @Override
+  public boolean onUnbind(Intent intent) {
+    return false;
+  }
+}
+
+客户端实现：
+private ServiceConnection conn = new ServiceConnection() {
+   @Override
+   public void onServiceConnected(ComponentName name, IBinder binder) {
+ 		TestTwoService.MyBinder myBinder = (TestTwoService.MyBinder) binder;
+	    service = myBinder.getService(); 
+   }
+
+   @Override
+   public void onServiceDisconnected(ComponentName name) {
+       isBind = false;
+   }
+}; 
+
+protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_a);
+    Intent intent = new Intent(this, TestTwoService.class);
+    intent.putExtra("from", "ActivityA");      
+    bindService(intent, conn, BIND_AUTO_CREATE);
+}
+
+```
+
+ 1.如果先bindService,再startService:
+
+​        在bind的Activity退出的时候,Service会执行unBind方法而不执行onDestory方法,因为有startService方法调用过,所以Activity与Service解除绑定后会有一个与调用者没有关连的Service存在
+
+2.如果先bindService,再startService,再调用Context.stopService
+
+​        Service的onDestory方法不会立刻执行,因为有一个与Service绑定的Activity,但是在Activity退出的时候,会执行onDestory,如果要立刻执行stopService,就得先解除绑定 
+
+3 先startService，再bindService。 
+
+首先在主界面创建时，startService(intent)启动方式开启服务，保证服务长期后台运行；
+
+然后调用服务时，bindService(intent, connection, BIND_AUTO_CREATE)绑定方式绑定服务，这样可以调用服务的方法； 
+
+调用服务功能结束后，unbindService(connection)解除绑定服务，置空中介对象；
+
+最后不再需要服务时，stopService(intent)终止服务。
+
+#### IntentService
+
+是service的子类，处理异步请求实现多线程。内部使用HanderThread+Handler实现异步处理。在handleIntent方法中执行耗时任务，执行完后自动调用带参数的stopself（starid）在所有任务执行完毕后关掉service。
+
+intentservice处理完后自动停掉。不需要手动停止
+
+使用场景：后台上传图片，文件，批量处理数据库等。优化application启动，在oncrate中开启service 初始化第三方库加载等
 
 #### Android异步任务机制之AsycTask
 
@@ -89,6 +187,14 @@
 > 3.网络缓存：读取速度最慢。
 >
 > 缓存机制的通用调度算法是LRU(最近最久未使用)，与内存缓存和硬盘缓存对应的类分别是LruCache和DiskLruCache，网络缓存okHttp。
+
+#### BitmapRegionDecoder加载高清大图
+
+BitmapRegionDecoder主要用于显示图片的某一块矩形区域，所以可以利用它来完成大图片的动态区域显示。
+
+l 简单用法：
+
+BitmapRegionDecoder提供了一系列的newInstance方法来构造对象，支持传入文件路径，文件描述符，文件的inputstrem等。
 
 #### Android数据存储的五种方式
 
@@ -232,25 +338,7 @@ runOnUiThread - Handler.post - new Thread()-[runOnUiThread] - View.post
 > 第三种方案：其实就是对原始的NestedScrolling机制再次做了一层封装。CoordinatorLayout默认实现了NestedScrollingParent接口。第二种方案只能由子View通知父View，但有时候除了需要通知父View，还需要通知兄弟View,这个时候就该是Behavior出场了。
 > https://blog.csdn.net/m0_37218227/article/details/82937655
 
-#### View的绘制原理，自定义View，自定义ViewGroup
-
-> View的绘制是从上往下一层层迭代下来的。
->
-> DecorView–>ViewGroup（— >ViewGroup）–>View ，按照这个流程从上往下，依次measure(测量),layout(布 局),draw(绘制)
-> https://blog.csdn.net/Android_SE/article/details/104450788
-
-> 自定义 View：
->
-> 1. onMeasure()方法用于测量自己宽高，前提是继承View。如果继承系统已经有的控件比如TextView,Button等等 则不需要重写，因为系统已经给你计算好了。
-> 2. onDraw()方法用于绘制自己想实现的样式。
-> 3. onTouch()用于用户和控件的交互处理。
-
-> 自定义 ViewGroup：
->
-> 1. onMeasure方法，for循环获取所有子view,然后根据子view的宽高来计算自己的宽高。
-> 2. onDraw() 一般不需要，默认是不会调用的。如果需要绘制就要实现dispatchDraw()来进行绘制。
-> 3. onLayout()用来摆放子view,前提view是可见。
-> 4. 很多情况下不是不会继承ViewGroup的，一般都是继承系统控件。
+> 4. 
 
 #### View、SurfaceView GLSurfaceView 与 TextureView
 
@@ -372,20 +460,144 @@ runOnUiThread - Handler.post - new Thread()-[runOnUiThread] - View.post
 >
 > https://blog.csdn.net/qq_36982160/article/details/89215226
 
-#### VIew的绘制事件
 
-draw()->drawBackground->dispatchDraw()->onDraw()->onDrawForeground
-
-#### View的touch事件
-
-    dispatchPointerEvent
-     ->dispatchTouchEvent，onInterceptTouchEvent,onTouch（如果listener不为空） ->onTouchEvent
-     ->dispatchGericMotionEvent->dispatchGericPointerEvent
-    						->dispatchGericFocusedEvent
-    					   	—>dispatchGericMotionInternal
 
 #### FragmentPagerAdapter和FragmentStatePagerAdapter区别
 
 FragmentPagerAdapter 会保留页面的状态，并不会完全销毁掉。
 FragmentStatePagerAdapter会完全销毁滑动过去的item，当需要初始化的时候，
 会重新初始化页面，然后将mSavedState中存储的状态重新赋予这个新的fragment， 达到fragment恢复的效果。
+
+### 属性动画Property Animation
+
+动画分为：视图动画（帧动画frame和补间Tween）和属性动画
+
+ 视图动画的缺陷：
+
+· 对象的局限性：仅限于View
+
+· 只改变了View的视觉效果，而没有改变View的属性
+
+· 动画效果单一
+
+ 属性动画的特点：
+
+1． 作用对象：任意对象，甚至没对象也可以
+
+2． 作用方式：改变对象的属性
+
+3． 动画效果：按需自定义，不再局限于上述4种基本变换
+
+继承关系
+
+![img](..\images\animator继承关系.jpg) 
+
+工作原理
+
+指定时间内，修改属性（对象中对应的字段）的值，以此实现该对象在**属性**上的动画效果。
+
+![img](..\images\animator工作原理.jpg)
+
+
+
+#### ValueAnimator
+
+ 属性动画的最核心的类
+
+原理：控制 值 的变化，之后 手动 赋值给对象的属性，从而实现动画
+
+对于控制的 值 的不同，Android 提供给我们三种构造方法来实例ValueAnimator对象
+
+ValueAnimator.ofInt(int... values) -- 整型数值
+
+ValueAnimator.ofFloat(float... values) -- 浮点型数值
+
+ValueAnimator.ofObject(TypeEvaluator evaluator, Object... values) -- 自定义对象类型
+
+TypeEvaluator：控制属性动画如何计算属性值的
+
+![image-20200713180125280](..\images\pointevaluator.png)
+
+fraction：表示动画完成度，据此计算当前动画的值
+
+startValue：动画初始值
+
+endValue：动画结束值
+
+#### ObjectAnimator
+
+**ValueAnimator需要我们为对象属性手动赋值；ObjectAnimator会为对象属性自动赋值**
+
+![image-20200713180257499](..\images\objectanimator.png)
+
+**Android预置好的一些属性：即四种基本变换，透明度、平移、缩放、旋转**
+
+![img](..\images\animator_att.jpg)
+
+**自动赋值**
+
+原理：实际上ObjectAnimator内部的工作机制是去寻找这个属性名对应的get和set方法，通过二者赋值。
+
+**因此：**
+
+ObjectAnimator 类针对的是任意对象 & 任意属性值，并不是单单针对于View对象
+
+如果需要采用ObjectAnimator 类实现动画效果，那么需要操作的对象就必须有该属性的set（） & get（）
+
+**特别注意：如果想让对象的属性a的动画生效，属性a需要同时满足下面两个条件：** 
+
+**1.对象必须要提供属性a的set（）方法**
+
+a. 如果没传递初始值，那么需要提供get（）方法，因为系统要去拿属性a的初始值
+
+b. 若该条件不满足，程序直接崩溃
+
+**2.对象提供的 属性a的set（）方法 对 属性a的改变 必须通过某种方法反映出来**
+
+a. 如带来ui上的变化
+
+b. 若这条不满足，动画无效，但不会崩溃） 
+
+#### AnimatorSet 组合动画
+
+![image-20200713180711747](..\images\animatorset.png)
+
+#### ViewPropertyAnimator
+
+Google为View的动画操作提供的一种便捷用法。只能通过View.animate()获取ViewPropertyAnimator。
+
+注意事项
+
+ViewPropertyAnimator实例通过View.animate()方法创建，之后的调用的所有方法，设置的所有属性都是通过这个实例完成的。
+
+ViewPropertyAnimator隐式启动动画，即当我们将动画定义完成之后，动画就会自动启动。当然，如果需要手动显式启动，我们仍然可以调用start()方法启动动画。
+
+ViewPropertyAnimator的连缀语法：每个方法返回值都是自身实例，因此方法的调用可以连缀调用。
+
+### 懒加载
+
+#### ViewPager+Fragment懒加载
+
+遇到的问题 
+
+在使用viewpager（或其他容器）与多个Fragment来组合使用，ViewPager 会默认一次加载当前页面前后隔一个页面，即使设置setofflimit（0）也无效果，也会预加载。这样把我们看不到的页面的数据也加载了，大大降低了性能，浪费初始化资源。然而我们就采用懒加载技术，只让用户看到的页面才会加载他的数据，大大提高效率。
+
+ 主要的思路做法 
+
+主要的方法是Fragment中的setUserVisibleHint()，此方法会在onCreateView(）之前执行，当viewPager中fragment改变可见状态时也会调用,当fragment 从可见到不见，或者从不可见切换到可见，都会调用此方法，使用getUserVisibleHint() 可以返回fragment是否可见状态。
+
+在Fragment中需要在onActivityCreated()及setUserVisibleHint()方法中都调了一次lazyLoad() 方法。如果仅仅在setUserVisibleHint()调用lazyLoad()，当默认首页首先加载时会导致viewPager的首页第一次展示时没有数据显示，切换一下才会有数据。因为首页fragment的setUserVisible()在onActivityCreated() 之前调用，此时isPrepared为false 导致首页fragment 没能调用onLazyLoad()方法加载数据。
+
+#### ViewStub 懒加载
+
+ViewStub 是一个轻量级的View，没有尺寸，不绘制任何东西，因此绘制或者移除时更省时。(ViewStub不可见，大小为0) 
+
+优点:  实现View的延迟加载，避免资源的浪费，减少渲染时间，在需要的时候才加载View
+
+ 缺点:
+
+ViewStub所要替代的layout文件中不能有<merge>标签
+
+ViewStub在加载完后会被移除，或者说是被加载进来的layout替换掉了
+
+ViewStub对象只可以Inflate一次，之后ViewStub对象会被置为空。

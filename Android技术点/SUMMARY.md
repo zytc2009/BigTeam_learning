@@ -47,6 +47,8 @@
 
 ​    [MVVM实战](android基础/mvvm实战.md)
 
+   [recyclerView原理](android基础/recyclerView和listView对比.md)
+
 ### 2、开发工具
 
 #### 							1）studio使用优化
@@ -118,8 +120,6 @@
 
 ​      [电量优化](性能优化/电量优化.md)
 
-
-
 ### 8、[常见错误分析和处理](常见错误处理.md)
 
 
@@ -137,6 +137,8 @@
   [OkHttp代码分析](第三方SDK/Okhttp.md)
 
   [Glide源码分析](第三方SDK/Glide.md)
+
+  [retrofit原理](第三方SDK/retrofit原理.md)
 
 
 

@@ -31,11 +31,13 @@
 
 #### 4）[线程](java基础/线程.md)
 
-#### 5) [泛型](java基础/java泛型.md)
+#### 5）[泛型](java基础/java泛型.md)
 
-#### 6) [java反射](java基础/java反射.md)
+#### 6）[java反射](java基础/java反射.md)
 
-#### 7) [java注解](java基础/java注解.md)
+#### 7）[java注解](java基础/java注解.md)
+
+#### 8）[线程池](java基础/线程池.md)
 
 
 
@@ -103,6 +105,22 @@
 ####   5）性能优化工具：TraceView、Systrace、调试GPU过度绘制 & GPU呈现模式分析、Hierarchy Viewer、MAT、Memory Monitor & Heap Viewer & Allocation Tracker、LeakCanary、Lint。
 
 
+
+#### Android lint 
+
+> Lint问题种类
+>
+> Correctness 不够完美的编码，比如硬编码、使用过时 API 等 
+>
+> Performanc 对性能有影响的编码，比如：静态引用，循环引用等 
+>
+> Internationalization 国际化，直接使用汉字，没有使用资源引用等 
+>
+> Security 不安全的编码，比如在 WebView 中允许使用 JavaScriptInterface等 
+>
+> Usability 可用的，有更好的替换的 比如排版、图标格式建议.png格式 等 
+>
+> Accessibility 辅助选项，比如ImageView的contentDescription往往建议在属性中定义 等
 
 ### 5、内存检测和优化
 

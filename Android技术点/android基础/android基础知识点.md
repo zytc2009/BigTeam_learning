@@ -200,6 +200,8 @@ BitmapRegionDecoder提供了一系列的newInstance方法来构造对象，支�
 
 > 1.使用SharedPreferences存储数据(commit,apply)
 >
+>    对于 apply返回时内存已经完成同步, 但是异步磁盘任务不保证是否完成，所以无法知道最终结果。对于 commit, 返回时内存和磁盘都已经同步完毕。  
+>
 > 2.文件存储数据
 >
 > 3.SQLite数据库存储数据
@@ -210,16 +212,208 @@ BitmapRegionDecoder提供了一系列的newInstance方法来构造对象，支�
 
 #### 初识ConstraintLayout及性能优势
 
-> 它的出现主要是为了解决布局嵌套过多的问题，以灵活的方式定位和调整小部件。从 Android Studio 2.3 起，官方的模板默认使用 ConstraintLayout。
-> 该布局拥有一个完全扁平的层次结构。这是因为 ConstraintLayout 允许您构建复杂的布局，而不必嵌套 View 和 ViewGroup 元素。
->
-> ConstraintLayout 速度更快。
-> ConstraintLayout 在测量/布局阶段的性能比RelativeLayout大约高 40%。
-> https://blog.csdn.net/lyb2518/article/details/77942517
+优点：减少布局嵌套，提高性能；可以按照比例约束控件的位置和尺寸，更好的适配屏幕。与relative类似但是要比relitiveLayout强大。
+
+1. 相对位置：相对父View或相对其他View或使用辅助工具：GuildeLine ，barrier（屏障）
+
+ layout_constraintLeft_toLeftOf = “parent”,layout_constraintRight_toRightOf =”@id/otherviewid”
+
+ …Top,Bottom,Start,End…
+
+ app:layout_constraintBaseLine_toBaseLineOf = “@id/baseline”  //文本极限约束  例如2个高度不同的textview想让文本对齐
+
+2. 剧中和偏移
+
+剧中：上下左右约束设置为parent
+
+偏移（按比例）：
+
+app:layout_constraintHorizontal_bias = “0.2” //水平偏移
+
+app:layout_constraintVertical_bias = “0.6” //垂直偏移
+
+3. 尺寸按宽高比(当宽或高其中一个设置为0dp时)
+
+app:layout_constraintDimensionRatio = “1:1”  //宽高比为1:1
+
+app:layout_constraintLeft_toLeftof = “parent”
+
+app:layout_constarintRight_toRightof = “parent”
+
+android:layout_width = “0dp”
+
+还可以设置：ratio为“H，2:3” //依据高度H按比例约束宽度；“W，2:3”依据宽度约束高度
+
+4. 像linearLayout一样设置权重比
+
+将控件相互约束；宽或高设置为0dp；设置layout_constraintHorizontal_weight=”1”
+
+layout_constraintVertical_weight = “1”
+
+5. 边距
+
+常用属性：
+
+layout_marginTop，layout_marginBottom，layout_margin_left，layout_margin_right
+
+注意：使用边距必须要先设置约束位置
+
+goneMargin属性 用于设置约束对象不可见时使用的margin值。
+
+app:layout_goneMarginLeft = “”   
+
+6. 相对角度:用一个角度和一个距离约束位置
+
+app：layout_constraintCircle = “@id/textview1” //相对的view
+
+app:layout_constraintCircleAngle = “120” //角度
+
+app:layout_constraintRadius = “150dp” //半径（距离）
+
+7. 辅助工具
+
+##### **Guildline**
+
+Guideline是一种特殊的控件，它在界面上是看不见的（被标记为View.Gone），只是用来做参考线。它一般有水平和垂直两种。
+
+Guideline的定位有两种方法：
+ 1.绝对定位：使用`layout_constraintGuide_begin`和`layout_constraintGuide_end`
+ 2.百分比定位：使用`layout_constraintGuide_percent`
+
+##### **Barrier**
+
+```
+ <Button
+        android:id="@+id/btn_a"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="这是控件A，我比较宽"/>
+
+ <Button
+        android:id="@+id/btn_b"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toLeftOf="@id/btn_a"
+        app:layout_constraintTop_toBottomOf="@id/btn_a"
+        android:text="这是控件B"/>
+        
+<android.support.constraint.Barrier
+        android:id="@+id/barrier"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:barrierDirection="end"
+        app:constraint_referenced_ids="btn_a,btn_b"/>
+        
+<Button
+        android:id="@+id/btn_c"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toLeftOf="@id/barrier"
+        app:layout_constraintTop_toTopOf="parent"
+        android:text="这是控件C"/>
+```
+
+其中，`app:constraint_referenced_ids="btn_a,btn_b"`这句指定这个Barrier是用来控制id为btn_a和btn_b的两个控件。而`app:barrierDirection="end"`这句等于在这两个控件的右端设置一道“屏障”。
+ 最后，我们让控件C依赖于这个Barrier。注意这句：`app:layout_constraintLeft_toLeftOf="@id/barrier"`
+
+##### **Group**
+
+```objectivec
+    <Button
+        android:id="@+id/btn_a"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:text="这是控件A"/>
+
+    <Button
+        android:id="@+id/btn_b"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toLeftOf="@id/btn_a"
+        app:layout_constraintTop_toBottomOf="@id/btn_a"
+        android:text="这是控件B"/>
+            
+    <android.support.constraint.Group
+        android:id="@+id/group"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="visible"
+        app:constraint_referenced_ids="btn_a,btn_b"/>
+```
+
+通过`app:constraint_referenced_ids="btn_a,btn_b"`这句，让group把btn_a和btn_b两个控件包含进来。注意，虽然Group也是一个控件，但是在UI上是看不见的。
+
+接下来，我们可以通过操作这个Group来同时操作btn_a和btn_b两个控件:
+
+```css
+findViewById(R.id.group).setVisibility(View.GONE);//把btn_a和btn_b同时设置为View.Gone
+```
+
+> **注意：一个控件可以属于多个Group，这是允许的。此时，这个控件的属性由xml里最后一个包含它的Group决定。**
+
+##### **Chains**
+
+两个或两个以上的控件相互约束成为一条链。
+
+可以在链头中设置链的样式
+
+ CHAIN_SPEAD //展开元素  默认的
+
+ CHAIN_INSIDE //展开但是两端贴近父布局
+
+ CHAIN_PACKED// 打包在一起
+
+可以将宽度或高度设置为0dp，使用链权重
+
+```
+  <!-- weight chain -->
+    <TextView
+        android:id="@+id/weightStart"
+        android:layout_width="0dp"
+        app:layout_constraintHorizontal_weight="1" />
+    <TextView
+        android:id="@+id/weightCenter"
+        android:layout_width="0dp"
+        app:layout_constraintHorizontal_weight="2" />
+    <TextView
+        android:id="@+id/weightEnd"
+        android:layout_width="0dp"
+        app:layout_constraintHorizontal_weight="2" />
+
+    <!-- spread chain-->
+    <TextView
+        android:id="@+id/spreadStart"
+        app:layout_constraintBottom_toTopOf="@id/weightStart"
+        app:layout_constraintEnd_toStartOf="@id/spreadCenter"
+        app:layout_constraintStart_toStartOf="parent" />
+    <TextView
+        android:id="@+id/spreadCenter" />
+    <TextView
+        android:id="@+id/spreadEnd" />
+   ...     
+```
+
+
 
 #### Activity的onNewIntent
 
 > 该方法是在除standard启动模式下，Activity实例已经存在，不再调用onCreate方法，转而调用该方法，若该实例不存在，则调用onCreate方法，onNewIntent()生命周期在onStart之前，另外调用onNewIntent()时，要调用setIntent()方法，之后再使用getIntent()方法才有效，谨记！
+
+#### Fragment生命周期相对Activity会多哪些？
+
+onAttach():fragment与Activity建立关联时
+
+onCreateView();创建Fragment视图时
+
+onActivityCreate（）；当Activity的oncreate执行完已返回后回调
+
+onDestroyView（）；fragment视图被移除
+
+onDetach（）；activity与fragment取消关联 
+
+生命周期：onAttach-》onCreate（）-》onCreateView->onActivityCreate->onStart->onResum->onpause->onstop->onDestroyView->onDestroy->onDetach
 
 #### Fragment的懒加载实现，参数传递与保存
 
@@ -350,7 +544,17 @@ runOnUiThread - Handler.post - new Thread()-[runOnUiThread] - View.post
 >
 > TextrueView: 前面的SurfaceView的工作方式是创建一个置于应用窗口之后的新窗口，脱离了Android的普通窗口，因此无法对其应用变换操作(平移、缩放、旋转等)，而TextureView则解决了此问题，Android4.0引入。
 
+#### 播放器 SufaceView+MediaPlay
 
+1. 调用player.setDataSource（）方法设置要播放的资源，可以是文件、文件路径、或者URL。
+
+2. 调用MediaPlayer.setDisplay(holder)设置surfaceHolder，surfaceHolder可以通过surfaceview的getHolder()方法获得。
+
+3. 调用MediaPlayer.prepare()来准备。
+
+4. 调用MediaPlayer.start()来播放视频。
+
+   ![image-20200714175839171](..\images\surfaceHolder.png)
 
 #### ViewPager的缓存实现
 
@@ -467,6 +671,124 @@ runOnUiThread - Handler.post - new Thread()-[runOnUiThread] - View.post
 FragmentPagerAdapter 会保留页面的状态，并不会完全销毁掉。
 FragmentStatePagerAdapter会完全销毁滑动过去的item，当需要初始化的时候，
 会重新初始化页面，然后将mSavedState中存储的状态重新赋予这个新的fragment， 达到fragment恢复的效果。
+
+#### Jni调用，so库，使用流程？so 生成机制流程如何打包成so？
+
+1. 新建一个类，在该类中定义public native的方法。
+
+2. 使用javah工具／命令 生成.h的头文件，放在jni目录下
+
+3. 创建cpp文件实现.h头文件中的方法。
+
+使用cmake构建工具进行ndk开发
+
+1. 创建NDk项目
+
+2. 在local.properties中配置ndk.dir路径
+
+3. 在build.gradle中配置externalNativeBuild。
+
+在defultConfig中配置cmake的命令参数
+
+在defultConfig之外定义cmake构建脚本cmakelist的路径。
+
+4. cmakelist中定义了cmake最小版本号，编译library的名称；模式shared可以编译成so，static不会编译；设置cpp原生代码路径等。
+
+5. 在java包下创建类，在类中定义native方法。
+
+6. 在cpp目录下创建.cpp的类，定义方法名为java_包名_类名_java中native方法名的方法实现方法。
+
+7. 在java的naïve方法类中 静态块加载library  system.loadlibrary(“native_lib”)
+
+8. 也可以编译成so，提供给其他项目使用。
+
+#### 进程保活
+
+进程被Kill的场景：
+
+1. 按home键App长时间在后台运行，内存不足时kill
+
+将服务设置为前台服务（service.startForeGround）提高进程优先级
+
+2. 锁屏状态，为了节省电量也会kill
+
+策略：注册广播监听锁屏和解锁事件，在锁屏时开启一个像素的透明Activity，提升优先级。解锁后关闭activity
+
+3. 含有service的后台进程被kill
+
+   通过service自带的api唤醒
+
+   onStartCommand方法中返回START_STICKY  //异常停止后，系统尝试重启Service
+
+#### 蓝牙Blue开发流程
+
+**设备端**：
+
+1.开启蓝牙广播
+
+创建service，在service中获取BluetoothLeAdvertiser，
+
+设置advertiseSeting参数，如timeout为0表示一直广播；
+
+设置广播AdvertisData  service的UUid和mac地址
+
+调用bluetoothAdvertiser.startAdversing开启蓝牙广播，并在回调中检测是否开启成功。
+
+//如果蓝牙广播开启失败会有一个3次重试机制
+
+2.初始化服务
+
+用BluetoothGattServer添加服务，并实现该类的回调。创建一个BluetoothGattService，指定uuid和类型为primary。为该service添加3个特征值characteristic 读（只Read权限），写（只Write权限），通知（Read，write，notify），分别为特征值设置uuid和权限，以及添加描述descriptor使用mbleServer.addService(service)将service添加到server中。
+
+ 3.监听回调
+
+在回调类中可以检测连接状态，服务添加是否成功，特征值读写请求操作，描述符读写请求
+
+ 4.接受消息
+
+在回调onCharacteristicWriteRequest中接受客户端发送的数据 （客户端通过修改写特征值writeCharacteristic value发送数据） 
+
+5.向客户端发送消息
+
+通过通知的特征值的修改向客户端发送消息
+
+ mCharacteristicNotify.setValue(requestBytes);
+
+ mBluetoothGattServer.notifyCharacteristicChanged(device, mCharacteristicNotify, false)
+
+**手机端**
+
+1.扫描
+
+使用BlutoothBleScanner.startSan()开启设备扫描
+
+在scanCallback回调中获取扫描到的ScanResult，获取广播中的serviceUUid，与自己设备的serviceuuid比较过滤出自己的设备。 
+
+2.gatt连接
+
+获取设备的mac地址，与设备端建立gatt连接 connectGatt，并设置连接回调监听；sdk版本>=23可以直接建立连接，否则需要先配对再连接流程 
+
+3.监听连接回调
+
+ 在连接成功的回调中onConnectionStateChange中为connected状态时 开启服务查询，调用mBluetoothGatt.discoverServices()再服务查询结果回调onServicesDiscovered 中获取设备端添加的service及service中的特征值 
+
+4.接受数据
+
+ 在回调特征值改变回调onCharacteristicChanged中获取设备端发来的数据（因为设备端通过修改notify特征值中的value发送数据） 
+
+5.发送数据
+
+ 使用获取到到写特质值writeCharacteristic 修改其value向设备端发送数据
+
+#### 文件下载-断点续传
+
+![image-20200714175632893](..\images\断点续传.png)
+
+#### 适配机型
+
+1. 如果存在状态栏，不需要适配，刘海区域包含在状态栏中了；
+
+2. 全屏显示：通过获取刘海的区域，页面功能部分避开刘海区域显示，保证在安全区中展示。Android9.0 google提供了获取凹口屏幕的api，使用DisplayCutout类获取凹口区域和安全区域。 Android 8.0及以前根据不同厂商提供的方案获取安全区域（华为 hwnotchSizeUtil类，小米，vivo等）
 
 ### 属性动画Property Animation
 

@@ -35,15 +35,20 @@
 > 8. Server进程会创建很多线程处理Binder请求，这些线程采用Binder驱动的线程池，由Binder驱动自身进行管理。一个进程的Binder线程池默认最大是16个，超过的请求会阻塞等待空闲的线程。
 > 9. Android中进行进程间通信主要通过Binder类（已经实现了IBinder接口），即具备了跨进程通信的能力。
 >
+
+
+
+#### IPC机制简介
+
 > IPC机制简介：
 >
 > IPC是Inter-Process Communication的缩写，含义就是跨进程通信；
 > 1.IPC（进程间通信）机制不是Android系统所独有的，其他系统也有相应的进程间通信机制。
 > 2.Android系统架构中，大量采用了Binder机制作为IPC，是Android系统中最重要的组成。
 > 3.当然也存在部分其他的IPC方式，比如Zygote通信便是采用socket。
->
+> 
 > Android系统中，每个应用程序是由Android的Activity，Service，Broadcast，ContentProvider这四大组件的中一个或多个组合而成，这四大组件所涉及的多进程间的通信底层都是依赖于Binder IPC机制。
->
+> 
 > 直观的看，Binder是Android中的一个类，实现了IBinder接口
 > 从不同角度理解Binder：
 >
@@ -51,13 +56,13 @@
 >
 > 2 从FrameWork角度，Binder是ServiceManager连接各种Manager（如am，wm
 > ）等的桥梁
->
+> 
 > 3 从应用层角度，Binder是客户端与服务端通信的媒介
 >
 > IPC原理:
 >
 > 每个Android的进程，只能运行在自己进程所拥有的虚拟地址空间。对于用户空间，不同进程之间彼此是不能共享的，而内核空间却是可共享的。Client进程向Server进程通信，就是利用进程间可共享的内核内存空间来完成底层通信工作的，Client端与Server端进程往往采用ioctl等方法跟内核空间的驱动进行交互。
->
+> 
 
 #### LeakCanary的工作过程以及原理
 
@@ -440,6 +445,24 @@ Retryable.Result ensureGone(final KeyedWeakReference reference, final long watch
 
 > https://blog.csdn.net/xiangzhihong8/article/details/99333594
 
+#### EventBus 优点是什么？与广播的本质区别？EventBus如何切换线程的？
+
+EventBus用于app内组件间，组件与后台线程间消息通信。
+
+Eventbus优点：1.调度灵活，不依赖于context，不用想广播一下关注context的注入和传递；2.父类对于通知的监听和处理可以继承给子类；3.订阅事件优先级；4.支持粘滞事件，保证通知不因为subscriber不在场而忽略。
+
+EventBus与广播区别：
+
+![img](..\images\eventbus和广播区别.jpg) 
+
+EventBus如何切换线程：
+
+1. 在主线程中执行：当threadMode是Main时，如果在主线程中发送，直接在当前线程执行。如果在子线程中发送，会有一个mainThreadPoster将包含订阅者信息的对象加入队列中。MainThreadPoster是handler子类，利用handler机制切换到主线程执行。
+
+2. 在子线程中执行：当threadmode为Background时，如果在子线程中发送，之间在当前线程执行。如果在主线程中发送会有一个backgroudPoster将包含订阅信息的对象加入队列中。BackgroundPoster是Runnable子类，会将自己丢入EventBus的线程池中，执行run方法。在run方法中不断从队列中取出订阅者对象，执行订阅方法。
+
+
+
 #### RxJava实现原理、设计模式
 
 > Rxjava基于一种扩展的观察者模式，整个模式中有4个角色(被观察者、观察者、订阅、事件)。
@@ -450,6 +473,18 @@ Retryable.Result ensureGone(final KeyedWeakReference reference, final long watch
 > 2. 观察者（Observer） 按顺序接收事件 & 作出对应的响应动作。具体如下图：
 >   ![示意图](https://imgconvert.csdnimg.cn/aHR0cDovL3VwbG9hZC1pbWFnZXMuamlhbnNodS5pby91cGxvYWRfaW1hZ2VzLzk0NDM2NS05OGVjOTJkZjBhNGQ3ZTBiLnBuZw?x-oss-process=image/format,png)
 >   https://blog.csdn.net/carson_ho/article/details/100112005
+
+Observer可以发送三种类型的事件，通过调用Observer的onNext(T value)、onComplete()和onError(Throwable error)就可以分别发出next事件、complete事件和error事件。在我们发射时还必须满足以下几个规则：
+
+1.上游可以发送无限个onNext, 下游也可以接收无限个onNext。
+
+2.当上游发送了一个onComplete后, 上游onComplete之后的事件将会继续发送, 而下游收到onComplete事件之后将不再继续接收事件。
+
+3.当上游发送了一个onError后, 上游onError之后的事件将继续发送, 而下游收到onError事件之后将不再继续接收事件。
+
+4.上游可以不发送onComplete或onError事件。
+
+5.最为关键的是onComplete和onError必须唯一并且互斥, 即不能发多个onComplete, 也不能发多个onError, 也不能先发一个onComplete, 然后再发一个onError, 反之亦然。
 
 #### Dagger依赖注入
 

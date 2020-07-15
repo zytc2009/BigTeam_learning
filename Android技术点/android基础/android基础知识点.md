@@ -8,7 +8,7 @@
 
 #### Activity生命周期
 
-![activity生命周期](..\images\activity生命周期.png)
+![activity生命周期](../images/activity生命周期.png)
 
 > onCreate - onStart - onResume - onPause - onStop - onRestart - onDestroy 
 >
@@ -577,7 +577,7 @@ runOnUiThread - Handler.post - new Thread()-[runOnUiThread] - View.post
 
 4. 调用MediaPlayer.start()来播放视频。
 
-   ![image-20200714175839171](..\images\surfaceHolder.png)
+   ![image-20200714175839171](../images/surfaceHolder.png)
 
 #### ViewPager的缓存实现
 
@@ -805,7 +805,7 @@ FragmentStatePagerAdapter会完全销毁滑动过去的item，当需要初始化
 
 #### 文件下载-断点续传
 
-![image-20200714175632893](..\images\断点续传.png)
+![image-20200714175632893](../images/断点续传.png)
 
 #### 适配机型
 
@@ -835,13 +835,13 @@ FragmentStatePagerAdapter会完全销毁滑动过去的item，当需要初始化
 
 继承关系
 
-![img](..\images\animator继承关系.jpg) 
+![img](../images/animator继承关系.jpg) 
 
 工作原理
 
 指定时间内，修改属性（对象中对应的字段）的值，以此实现该对象在**属性**上的动画效果。
 
-![img](..\images\animator工作原理.jpg)
+![img](../images/animator工作原理.jpg)
 
 
 
@@ -861,7 +861,7 @@ ValueAnimator.ofObject(TypeEvaluator evaluator, Object... values) -- 自定义�
 
 TypeEvaluator：控制属性动画如何计算属性值的
 
-![image-20200713180125280](..\images\pointevaluator.png)
+![image-20200713180125280](../images/pointevaluator.png)
 
 fraction：表示动画完成度，据此计算当前动画的值
 
@@ -873,7 +873,7 @@ endValue：动画结束值
 
 **ValueAnimator需要我们为对象属性手动赋值；ObjectAnimator会为对象属性自动赋值**
 
-![image-20200713180257499](..\images\objectanimator.png)
+![image-20200713180257499](../images/objectanimator.png)
 
 **Android预置好的一些属性：即四种基本变换，透明度、平移、缩放、旋转**
 
@@ -905,7 +905,7 @@ b. 若这条不满足，动画无效，但不会崩溃）
 
 #### AnimatorSet 组合动画
 
-![image-20200713180711747](..\images\animatorset.png)
+![image-20200713180711747](../images/animatorset.png)
 
 #### ViewPropertyAnimator
 

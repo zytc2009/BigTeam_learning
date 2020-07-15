@@ -38,6 +38,29 @@
 
 > 当系统配置发生变化后(比如屏幕旋转)，Activity 会被销毁，它的onPause、onStop、onDestroy会被调用，不过由于是在异常情况下终止的，系统会在调用onStop 方法之前调用 onSaveInstanceState 方法保存 Activity 的状态（UI状态和数据），在Activity 重建时，从onCreate 或onRestoreInstanceState 中获取保存的Activity的状态，重新恢复Activity。
 
+#### Android为什么requestWindowFeature()在setContentView()之前调用？
+
+何一个Activity中显示的界面其实主要都由两部分组成，标题栏（TitleView）和内容布局(ContentView)。标题栏就是在很多界面顶部显示的那部分内容。而内容布局就是一个FrameLayout，这个布局的id叫作content，我们调用setContentView()方法时所传入的布局其实就是放到这个FrameLayout中的，这也是为什么这个方法名叫作setContentView()，而不是叫setView()。
+
+Activity的RequestWindowFeature()实际上走的是PhoneWIndow的requestFeature()，在PhoneWIndow的requestFeature()中有个前提条件，成员属性mContentParent不能为非null，这是构建窗体的view，即在为窗体设置属性时，还不能构建窗体。
+
+```
+低版本API
+public boolean requestFeature(int featureId) {
+        if (mContentParent != null) {
+            throw new AndroidRuntimeException("requestFeature() must be called before adding content");
+        }
+        .....
+}
+
+api：29
+public boolean requestFeature(int featureId) {
+    if (mContentParentExplicitlySet) {//应该改为boolean变量记录，setContentView置true
+        throw new AndroidRuntimeException("requestFeature() must be called before adding content");
+    }    
+}
+```
+
 #### activity启动模式
 
  standard模式：在这种模式下，activity默认会进入启动它的activity所属的任务栈中。这也是默认的一种模式

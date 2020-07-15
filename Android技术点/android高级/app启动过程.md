@@ -165,6 +165,7 @@ zygote IPC没有使用binder机制
 ```
  public static void main(String[] args) {
         Looper.prepareMainLooper();
+        //主handler，ApplicationThread都是他的成员，并且直接创建了对象
         ActivityThread thread = new ActivityThread();
         thread.attach(false, startSeq);
         Looper.loop();
@@ -192,6 +193,7 @@ ActvityThread.attach()向ams报告，AMS添加消息BIND_APPLICATION到应用主
 private void handleBindApplication(AppBindData data) {
     ...
     Application app;
+    //调用LoadApk的makeApplication
     app = data.info.makeApplication(data.restrictedBackupMode, null);
     if (!data.restrictedBackupMode) {
         if (!ArrayUtils.isEmpty(data.providers)) {

@@ -25,6 +25,8 @@
 
 #### 1）[基础知识](java基础/java基础.md)
 
+​      [java虚拟机](android高级/java虚拟机.md)
+
 #### 2）[异常处理](java基础/Java异常.md)
 
 #### 3）[容器](java基础/容器.md)
@@ -89,7 +91,7 @@
 
 10) [自定义事件总线](android高级/自定义事件总线的演化.md)
 
-
+11)[Scoped Storage分区存储](android高级/scopedstorage.md)
 
 ### 4、性能优化
 ​     [性能优化简介](性能优化/README.md)

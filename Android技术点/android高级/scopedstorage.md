@@ -253,6 +253,7 @@ private void getAllPdf() {//查询sd卡所有pdf文件
 - Native代码访问文件
 
   如果Native代码需要访问文件，可以参考下面方式：
+
   - 通过openFileDescriptor返回ParcelFileDescriptor
   - 通过ParcelFileDescriptor.detachFd()读取FD
   - 将FD传递给Native层代码
@@ -512,6 +513,7 @@ Android Q，App如果启动了Filtered View，那么只能直接访问自己目�
 - App自身访问，跟访问自身App-specific一样
 
 - 其他App访问
+
   - 默认情况下Media Scanner不会扫描App-specific里面的多媒体文件，如果需要扫描需要通过MediaScannerConnection.scanFile添加到MediaProvider数据库中
 
     访问方式跟读写公共目录一样。
@@ -524,6 +526,303 @@ App是Filtered View，其他App无法直接访问当前App私有目录，需要�
 
 #### 通过SAF文件
 
+- 共享App自定义DocumentsProvider
 
+  a) 指定DocumentsProvider
+
+	<provider
+	        android:name=".MyDocumentsProvider"
+	        android:authorities="com.xxx.xxx.authorities"
+	        android:exported="true"
+	        android:grantUriPermissions="true"
+	        android:permission="android.permission.MANAGE_DOCUMENTS">
+	        <intent-filter>
+	            <action android:name="android.content.action.DOCUMENTS_PROVIDER"/>
+	        </intent-filter>
+	</provider>
+​	 b) DocumentsProvider实现基本接口：		
+
+```
+public class MyDocumentsProvider extends DocumentsProvider {
+    /**
+     * 默认root需要查询的项
+     */
+    private final static String[] DEFAULT_ROOT_PROJECTION = new String[]{Root.COLUMN_ROOT_ID, Root.COLUMN_SUMMARY, 
+    Root.COLUMN_FLAGS, Root.COLUMN_TITLE, Root.COLUMN_DOCUMENT_ID, Root.COLUMN_ICON,
+            Root.COLUMN_AVAILABLE_BYTES};
+
+@Override
+	public Cursor queryRoots(final String[] projection) throws FileNotFoundException {
+        //创建一个查询cursor, 来设置需要查询的项, 如果"projection"为空, 那么使用默认项
+        final MatrixCursor result = new MatrixCursor(projection != null ? projection : DEFAULT_ROOT_PROJECTION);
+        // 添加home路径，最好做个sd卡判断
+        File homeDir = Environment.getExternalStorageDirectory();         
+        MatrixCursor.RowBuilder row = result.newRow();
+        row.add(Root.COLUMN_ROOT_ID, homeDir.getAbsolutePath());
+        row.add(Root.COLUMN_DOCUMENT_ID, homeDir.getAbsolutePath());
+        row.add(Root.COLUMN_TITLE, getContext().getString(R.string.home));
+        row.add(Root.COLUMN_FLAGS, Root.FLAG_LOCAL_ONLY | Root.FLAG_SUPPORTS_CREATE | Root.FLAG_SUPPORTS_IS_CHILD);
+        row.add(Root.COLUMN_ICON, R.mipmap.ic_launcher);
+        row.add(Root.COLUMN_SUMMARY, sdCard.getAbsolutePath());
+        row.add(Root.COLUMN_AVAILABLE_BYTES, new StatFs(homeDir.getAbsolutePath()).getAvailableBytes());
+        return result;
+    }
+
+    @Override
+    public boolean isChildDocument(final String parentDocumentId, final String documentId) {
+        return documentId.startsWith(parentDocumentId);
+    }    
+    
+    @Override
+    public Cursor queryDocument(final String documentId, final String[] projection) throws FileNotFoundException {
+        // 创建一个查询cursor, 来设置需要查询的项, 如果"projection"为空, 那么使用默认项
+        final MatrixCursor result = new MatrixCursor(projection != null ? projection : DEFAULT_DOCUMENT_PROJECTION);
+        includeFile(result, new File(documentId));
+        return result;
+    }
+
+    @Override
+    public Cursor queryChildDocuments(final String parentDocumentId, final String[] projection, final String sortOrder) throws FileNotFoundException {
+        // 判断是否缺少权限
+        if (LocalStorageProvider.isMissingPermission(getContext())) {
+            return null;
+        }
+        // 创建一个查询cursor, 来设置需要查询的项, 如果"projection"为空, 那么使用默认项
+        final MatrixCursor result = new MatrixCursor(projection != null ? projection : DEFAULT_DOCUMENT_PROJECTION);
+        final File parent = new File(parentDocumentId);
+        for (File file : parent.listFiles()) {
+            // 不显示隐藏的文件或文件夹
+            if (!file.getName().startsWith(".")) {
+                // 添加文件的名字, 类型, 大小等属性
+                includeFile(result, file);
+            }
+        }
+        return result;
+    }
+
+    private void includeFile(final MatrixCursor result, final File file) throws FileNotFoundException {
+        final MatrixCursor.RowBuilder row = result.newRow();
+        row.add(Document.COLUMN_DOCUMENT_ID, file.getAbsolutePath());
+        row.add(Document.COLUMN_DISPLAY_NAME, file.getName());
+        String mimeType = getDocumentType(file.getAbsolutePath());
+        row.add(Document.COLUMN_MIME_TYPE, mimeType);
+        int flags = file.canWrite()
+                ? Document.FLAG_SUPPORTS_DELETE | Document.FLAG_SUPPORTS_WRITE | Document.FLAG_SUPPORTS_RENAME
+                | (mimeType.equals(Document.MIME_TYPE_DIR) ? Document.FLAG_DIR_SUPPORTS_CREATE : 0) : 0;
+        if (mimeType.startsWith("image/"))
+            flags |= Document.FLAG_SUPPORTS_THUMBNAIL;
+        row.add(Document.COLUMN_FLAGS, flags);
+        row.add(Document.COLUMN_SIZE, file.length());
+        row.add(Document.COLUMN_LAST_MODIFIED, file.lastModified());
+    }
+
+    @Override
+    public String getDocumentType(final String documentId) throws FileNotFoundException {
+        if (LocalStorageProvider.isMissingPermission(getContext())) {
+            return null;
+        }
+        File file = new File(documentId);
+        if (file.isDirectory())
+            return Document.MIME_TYPE_DIR;
+        final int lastDot = file.getName().lastIndexOf('.');
+        if (lastDot >= 0) {
+            final String extension = file.getName().substring(lastDot + 1);
+            final String mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
+            if (mime != null) {
+                return mime;
+            }
+        }
+        return "application/octet-stream";
+    }
+
+    @Override
+    public boolean onCreate() {
+        return true;  // 这里需要返回true
+    }
+}
+```
+
+- 访问App通过ACTION_OPEN_DOCUMENT，启动浏览
+
+  ```
+  Intent intent=new Intent(Intent.ACTION_OPEN_DOCUMENT);//ACTION_OPEN_DOCUMENT  
+  intent.addCategory(Intent.CATEGORY_OPENABLE);  
+  intent.setType("image/jpeg");//"*/*"
+  startActivityForResult(intent, 5);
+  ```
+
+  
 
 #### 共享App实现FileProvider
+
+大概步骤：
+
+- 指定App FileProvider
+
+  ```
+    <provider
+          android:name="android.support.v4.content.FileProvider"
+          android:authorities="<包名>.fileProvider"
+          android:grantUriPermissions="true"
+          android:exported="false">
+        <meta-data
+            android:name="android.support.FILE_PROVIDER_PATHS"
+            android:resource="@xml/file_paths"/>
+      </provider>
+  ```
+
+- 指定文件路径，配置文件必须要放到res/xml中
+
+  ```
+  <?xml version="1.0" encoding="utf-8"?>
+  <resources>
+    <paths>
+      <!-- Context.getFilesDir() + "/path/" -->
+      <files-path
+          name="my_files"
+          path="mazaiting/"/>
+      <!-- Context.getCacheDir() + "/path/" -->
+      <cache-path
+          name="my_cache"
+          path="mazaiting/"/>
+      <!-- Context.getExternalFilesDir(null) + "/path/" -->
+      <external-files-path
+          name="external-files-path"
+          path="mazaiting/"/>
+      <!-- Context.getExternalCacheDir() + "/path/" -->
+      <external-cache-path 
+           name="name" 
+           path="mazaiting/" />
+      <!-- Environment.getExternalStorageDirectory() + "/path/" -->
+      <external-path
+          name="my_external_path"
+          path="mazaiting/"/>
+      <!-- Environment.getExternalStorageDirectory() + "/path/" -->
+      <external-path
+          name="files_root"
+          path="Android/data/<包名>/"/>
+      <!-- path设置为'.'时代表整个存储卡 Environment.getExternalStorageDirectory() + "/path/"   -->
+      <external-path
+          name="external_storage_root"
+          path="."/>
+    </paths>
+  </resources>
+  ```
+
+- 获取分享Uri
+
+  ```dart
+   Uri contentUri = FileProvider.getUriForFile(context,
+                BuildConfig.APPLICATION_ID + ".fileProvider",
+                new File(path));
+  ```
+
+- 设置权限，并且发送Uri
+
+  ```
+  Intent intent = new Intent(Intent.ACTION_SEND);
+  File imagePath = new File(filePath);
+  Uri imageUri;
+  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+      imageUri = FileProvider.getUriForFile(activity, BuildConfig.APPLICATION_ID + ".fileProvider", imagePath);
+      intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+  } else {
+      imageUri = Uri.fromFile(imagePath);
+  }
+  intent.setDataAndType(imageUri, getContentResolver().getType(imageUri));
+  activity.startActivityForResult(intent, requestCode);
+  ```
+
+- 接收App，设置接受的inter-filter
+
+  ```
+  <intent-filter>
+      <action android:name="android.intent.action.SEND" />
+      <category android:name="android.intent.category.DEFAULT" />
+      <data android:mimeType="image/*"/>
+  </intent-filter>
+  ```
+
+- 接收并处理Uri
+
+  ```
+   ParcelFileDescriptor pfd = getContentResolver().openFileDescriptor(intent.getData(),"r");
+  ```
+
+  
+
+#### MediaStore_data字段
+
+MediaStore中，DATA即（_data）字段，在Android Q中开始废弃。读写文件需要通过openFileDescriptor。
+
+#### MediaStore文件Pending状态
+
+Android Q上，MediaStore中添加了一个IS_PENDING Flag，用于标记当前文件时Pending状态。
+
+其他App通过MediaStore查询文件，如果没有设置setIncludePending接口，查询不到设置为Pending状态的文件，这就给App专享访问此文件。在一些情况下使用，例如在下载的时候：下载中，文件是Pending状态à下载完成，文件Pending状态置为0。
+
+![image-20200716223107076](../images/mediastore_pending.png)
+
+### MediaColumns.RELATIVE_PATH设置存储路径
+
+Android Q上，通过MediaStore存储到公共目录的文件，除了上文Uri跟公共目录关系中规定的每一个存储空间的一级目录外，可以通过MediaColumns.RELATIVE_PATH来指定存储的次级目录，这个目录可以使多级，具体代码如下：
+
+- ContentResolver insert方法
+
+  通过values.put(Media.RELATIVE_PATH,"Pictures/album/family ")指定存储目录。其中，Pictures是一级目录，album/family是子目录。
+
+- ContentResolver update方法
+
+  通过values.put(Media.RELATIVE_PATH,"Pictures/album/family ")指定存储目录。通过update方法，可以移动存储地方。
+
+#### 访问图片Exif Metadata
+
+Android Q上， App如果需要访问图片上的Exif Metadata，需要做下列事情：
+
+- 申请ACCESS_MEDIA_LOCATION权限
+- 通过MediaStore.setRequireOriginal返回新Uri
+
+Demo Code如下：
+
+![image-20200716223438330](../images/exifinterface.png)
+
+#### AppFiltered View，访问权限总结
+
+App访问不同目录的权限总结如下：
+
+| 文件位置                         | 需要权限                                                     | 访问方式              | 卸载是否保存 |
+| -------------------------------- | ------------------------------------------------------------ | --------------------- | ------------ |
+| App-specific目录                 | 无                                                           | getExternalFilesDir() | 不保留       |
+| Media文件(photos, videos, audio) | 访问其他app文件，需要READ_EXTERNAL_STORAGE<br>修改其他app文件，需要<br/>WRITE_EXTERNAL_STORAGE | MediaStore            | 保留         |
+| Downloads                        | 无                                                           | SAF                   | 保留         |
+
+#### 应用卸载
+
+如果App在AndroidManifest.xml中声明：android:hasFragileUserData="true"
+
+卸载应用会有提示是否保留App数据：
+
+#### App数据迁移
+
+Android Q上，App TargetSDK>=Q默认是Filtered View。App如果是Filtered View，会涉及到数据的迁移，不然会导致旧数据无法使用。可以从下面几方面着手数据迁移：
+
+- App需要在Legacy View下才能拥有完整操作存储的权限
+
+- App存放在非公共区域的文件，可以通过SAF访问
+
+  通过SAF选择目录文件，用户选择访问App文件。
+
+- App可以将需要保存的文件：
+
+  Images、Video、Audio放到对应的公共目录，其他文件卸载后不删除文件可以放到Downloads下面。
+
+#### MediaStoreQueries
+
+在使用MediaStore进行query动作的时候，使用Projection时，Column Name要在MediaStore中定义好的。
+
+#### WRITE_MEDIA_STORAGE权限
+
+WRITE_MEDIA_STORAGE是一个很大强大的权限，能够允许App获取访问所有存储设备的权限。访问所有存储设备的权限，这个应当只赋予Media Stack。**官方不推荐使用**
+
+#### 
+

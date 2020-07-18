@@ -511,12 +511,13 @@ Observer可以发送三种类型的事件，通过调用Observer的onNext(T valu
 > 1. java派：通过修改ClassLoader来让系统优先加载补丁包里的类
 >   代表作有腾讯的tinker，谷歌官方的Instant Run，包括multidex也是采用的这种方案
 >   优点是稳定性较好，缺点是可能需要重启应用
->
 > 2. native派：通过内存操作实现，比如方法替换等
 >   代表作是阿里的SopHix，如果算上hook框架的话，还有dexposed，epic等等
 >   优点是即时生效无需重启，缺点是稳定性不好：
 >   如果采用方法替换方式实现，假如这个方法被内联/Sharpening优化了，那么就失效了；inline hook则无法修改超短方法。
 >   热修复后使用反射调用对应方法时可能发生IllegalArgumentException。
+>
+> ![](../images/andfix.jpg)
 
 #### 组件化原理和解决方案
 

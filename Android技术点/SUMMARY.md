@@ -41,7 +41,7 @@
 
 #### 8）[线程池](java基础/线程池.md)
 
-
+#### 9）[JNI相关](JNI相关.md)
 
 ## 二、Android篇
 
@@ -199,11 +199,7 @@
 
   [Multidex流程和优化方案](组件化和插件/Multidex流程.md)
 
-
-
 ####  3.JetPack
-
-
 
 
 

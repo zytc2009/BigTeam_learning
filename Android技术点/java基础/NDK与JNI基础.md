@@ -126,7 +126,7 @@ JNI_CreateJavaVM(JavaVM **pvm, void **penv, void*args);
 
 JNIEnv是当前Java线程的执行环境，一个JVM对应一个JavaVM结构，而一个JVM中可能创建多个Java线程，每个线程对应一个JNIEnv结构，它们保存在线程本地存储TLS中。因此，不同的线程的JNIEnv是不同，也不能相互共享使用。JNIEnv结构也是一个函数表，在本地代码中通过JNIEnv的函数表来操作Java数据或者调用Java方法。也就是说，只要在本地代码中拿到了JNIEnv结构，就可以在本地代码中调用Java代码。
 
-###### 2.1JNIEnv是什么？
+###### 2.1 JNIEnv是什么？
 
 > JNIEnv是一个线程相关的结构体，该结构体代表了Java在本线程的执行环境
 

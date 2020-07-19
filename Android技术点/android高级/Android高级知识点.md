@@ -1,11 +1,6 @@
 [TOC]
 
-#### 热修复的核心原理
 
-利用Android类加载机制，把需要修复的类打包成dex文件，把这个修复过的dex文件排在dexElements最前面，ClassLoader在修复过的dex文件加载到类之后就不会再去加载错误的类了。
-
-那art下，热修复的实现上有什么需要注意的地方？
-原来aot会生成一个base.art文件，在ClassLoader创建之后就会把base.art中的类注入到缓存中去，所以会导致这些类无法修复。
 
 #### jvm和dalvik、art的区别
 
@@ -499,6 +494,11 @@ Observer可以发送三种类型的事件，通过调用Observer的onNext(T valu
 > https://blog.csdn.net/shusheng0007/article/details/80950117
 
 #### 热修复实现原理，解决方案
+
+利用Android类加载机制，把需要修复的类打包成dex文件，把这个修复过的dex文件排在dexElements最前面，ClassLoader在修复过的dex文件加载到类之后就不会再去加载错误的类了。
+
+那art下，热修复的实现上有什么需要注意的地方？
+原来aot会生成一个base.art文件，在ClassLoader创建之后就会把base.art中的类注入到缓存中去，所以会导致这些类无法修复。
 
 > 热修复分为三个部分，分别是Java代码部分热修复，Native代码部分热修复，还有资源热修复。
 >

@@ -716,14 +716,14 @@ FragmentStatePagerAdapter会完全销毁滑动过去的item，当需要初始化
 在defultConfig之外定义cmake构建脚本cmakelist的路径。
 
 4. cmakelist中定义了cmake最小版本号，编译library的名称；模式shared可以编译成so，static不会编译；设置cpp原生代码路径等。
-
 5. 在java包下创建类，在类中定义native方法。
-
 6. 在cpp目录下创建.cpp的类，定义方法名为java_包名_类名_java中native方法名的方法实现方法。
-
 7. 在java的naïve方法类中 静态块加载library  system.loadlibrary(“native_lib”)
-
 8. 也可以编译成so，提供给其他项目使用。
+
+#### SO的适配
+
+当一个应用安装在设备上，只有该设备支持的CPU架构对应的.so文件会被安装。在x86设备上，libs/x86目录中如果存在.so文件的话，会被安装，如果不存在，则会选择armeabi-v7a中的.so文件，如果也不存在，则选择armeabi目录中的.so文件（因为x86设备也支持armeabi-v7a和armeabi）。
 
 #### 进程保活
 
@@ -807,11 +807,53 @@ FragmentStatePagerAdapter会完全销毁滑动过去的item，当需要初始化
 
 ![image-20200714175632893](../images/断点续传.png)
 
-#### 适配机型
+#### 适配机型屏幕
 
 1. 如果存在状态栏，不需要适配，刘海区域包含在状态栏中了；
-
 2. 全屏显示：通过获取刘海的区域，页面功能部分避开刘海区域显示，保证在安全区中展示。Android9.0 google提供了获取凹口屏幕的api，使用DisplayCutout类获取凹口区域和安全区域。 Android 8.0及以前根据不同厂商提供的方案获取安全区域（华为 hwnotchSizeUtil类，小米，vivo等）
+
+#### Android系统适配drawable原则
+
+Android为了更好地优化应用在不同屏幕密度下的用户体验，在项目的res目录下可以创建drawable-[density]（density为6种通用密度名）目录，开发者在进行APP开发时，针对不同的屏幕密度，将图片放置于对应的drawable-[density]目录，Android系统会依据特定的原则来查找各drawable目录下的图片。查找流程为： 
+
+1. 先查找和屏幕密度最匹配的文件夹。如当前设备屏幕密度dpi为160，则会优先查找drawable-mdpi目录；如果设备屏幕密度dpi为420，则会优先查找drawable-xxhdpi目录。 
+2. 如果在最匹配的目录没有找到对应图片，就会向更高密度的目录查找，直到没有更高密度的目录。例如，在最匹配的目录drawable-mdpi中没有查找到，就会查找drawable-hdpi目录，如果还没有查找到，就会查找drawable-xhdpi目录，直到没有更高密度的drawable-[density]目录。
+3. 如果一直往高密度目录均没有查找，Android就会查找drawable-nodpi目录。drawable-nodpi目录中的资源适用于所有密度的设备，不管当前屏幕的密度如何，系统都不会缩放此目录中的资源。因此，对于永远不希望系统缩放的资源，最简单的方法就是放在此目录中；同时，放在该目录中的资源最好不要再放到其他drawable目录下了，避免得到非预期的效果。 
+4. 如果在drawable-nodpi目录也没有查找到，系统就会向比最匹配目录密度低的目录依次查找，直到没有更低密度的目录。例如，最匹配目录是xxhdpi，更高密度的目录和nodpi目录查找不到后，就会依次查找drawable-xhdp、drawable-hdpi、drawable-mdpi、drawable-ldpi。
+
+举个例子，假如当前设备的dpi是320，系统会优先去drawable-xhdpi目录查找，如果找不到，会依次查找xxhdpi → xxxhdpi → hdpi → mdpi → ldpi。对于不存在的drawable-[density]目录直接跳过，中间任一目录查找到资源，则停止本次查找。
+
+总结一下图片查找过程：优先匹配最适合的图片→查找密度高的目录（升序）→查找密度低的目录（降序）。
+
+#### RelativeLayout执行onMeasure一次，子view执行两次onMeasure
+
+  主要是因为两个方向分别测量
+
+#### LinearLayout layout_weight属性用法总结
+
+实际大小=指定大小+（屏幕大小-（所有组件大小的和））*权重比例。
+
+用一屏幕的大小减去所有组件大小的和，得到剩余大小，或理解为可分配空间，该值可为负。然后用我们给某个组件设定的值，加上其在剩余大小中按比例计算后的值，就是该组件最后的实际大小。
+
+1. android:layout_width="0dp"时：
+
+   组件大小=0+（L-（0+0+0））*权重比例，组件大小和权重成正比
+
+2. android:layout_width="match_parent"时：
+
+   组件大小=L+（L-（L+L+L））*权重比例，组件大小和权重成反比。
+
+3. android:layout_width="wrap_content"时：
+
+   组件大小=所需大小+(L-各组件所需大小和)*权重比例，剩余大小即(L-各组件所需大小和)为正，则为正比，否则为反比。
+
+   该情况和组件内容占用大小有关，所以布局上并不是很明显的比例关系，因为比例关系仅指剩余大小的比例： 
+
+   剩余大小为正，即屏幕空间足够，所占空间和权重成正比。 剩余大小为负，即屏幕空间不足，所占空间和权重成反比
+
+4. 混合
+
+   实际大小=指定大小+（屏幕大小-（所有组件大小的和））*权重比例。
 
 ### 属性动画Property Animation
 

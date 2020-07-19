@@ -160,7 +160,7 @@ zygote IPC没有使用binder机制
 
 （4）AMS知道了Launcher已经挂起之后，就可以准备启动新的Activity了，通过Socket去和Zygote协商，如果ProcessRecord为空或者它的thread为空，需要创建进程，那么就会fork自身，创建一个进程，新的进程会导入ActivityThread类，这就是每一个应用程序都有一个ActivityThread与之对应的原因；
 
-（5）进程创建好了，通过调用上述的ActivityThread的main方法，创建主线程Looper和Handler，创建ActivityThread对象，在attach方法把ApplicationThread注册到AMS，然后开启消息循环队列，这也是主线程默认绑定Looper的原因；   
+（5）进程创建好了，通过调用上述的ActivityThread的main方法，创建app的主线程Looper和Handler，创建ActivityThread对象，在attach方法把ApplicationThread注册到AMS，然后开启消息循环队列，这也是主线程默认绑定Looper的原因；   
 
 ```
  public static void main(String[] args) {

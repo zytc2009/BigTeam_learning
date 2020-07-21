@@ -59,7 +59,7 @@
 
 #####      											 （1）优化工具
 
-#####            																					       	   Analyze APK
+#####            																					       	   	Analyze APK
 
 #### 							 2）gradle使用及优化
 
@@ -96,11 +96,9 @@
 
   1）[Android启动速度优化](性能优化/启动优化.md)
 
-  2 )  [UI优化总结](ui优化/UI优化.md)
+  2）[UI渲染优化](性能优化/UI渲染优化.md)
 
-  3）[UI渲染优化](性能优化/UI渲染优化.md)
-
-  4) [卡顿优化](性能优化/Android卡顿分析.md)
+  3) [卡顿优化](性能优化/Android卡顿分析.md)
 
 ####   5）性能优化工具：TraceView、Systrace、调试GPU过度绘制 & GPU呈现模式分析、Hierarchy Viewer、MAT、Memory Monitor & Heap Viewer & Allocation Tracker、LeakCanary、Lint。
 

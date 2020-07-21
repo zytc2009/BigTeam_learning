@@ -32,7 +32,7 @@ so相关：
 >
 > - **AndroidManifest.xml**：包含核心 Android 清单文件。该文件列出应用程序的名称，版本，访问权限和引用的库文件。该文件使用 Android 的二进制XML 格式。
 >
-> - lib、class.dex 和 res 占用了超过 90%的空间，所
+> - lib、class.dex 和 res 占用了超过 90%的空间，所.0
 >
 >   以这三块是优化 Apk 大小的重点（实际情况不唯一）
 >

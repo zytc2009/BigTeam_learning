@@ -1,3 +1,5 @@
+[Toc]
+
 ### Android UI渲染
 
 #### UI优化究竟是指什么
@@ -14,7 +16,7 @@
 
 不过 OLED 的单价成本要比 LCD 高很多。对于屏幕碎片化的问题，Android 推荐使用 dp 作为尺寸单位来适配 UI，因此每个 Android 开发都应该很清楚 px、dp、dpi、ppi、density 这些概念。
 
-![img](https://static001.geekbang.org/resource/image/e3/ce/e3094e900dccacb9d9e72063ca3084ce.png)
+![img](../images/dp_px.png)
 
 通过 **dp 加上自适应布局可以基本解决屏幕碎片化的问题**，也是 Android 推荐使用的屏幕兼容性适配方案。但是它会存在两个比较大的问题：
 
@@ -30,7 +32,7 @@
 
 除了屏幕，UI 渲染还依赖两个核心的硬件：CPU 与 GPU。UI 组件在绘制到屏幕之前，都需要经过 Rasterization（栅格化）操作，而栅格化操作又是一个非常耗时的操作。GPU（Graphic Processing Unit ）也就是图形处理器，它主要用于处理图形运算，可以帮助我们加快栅格化操作。
 
-![img](https://static001.geekbang.org/resource/image/1c/8d/1c94e50372ff29ef68690da92c6b468d.png)
+![img](..\images\cpu_gpu.png)
 
 你可以从图上看到，**软件绘制使用的是 Skia 库**，它是一款能在低端设备如手机上呈现高质量的 2D 跨平台图形框架，类似 **Chrome、Flutter 内部使用的都是 Skia 库**。
 
@@ -38,7 +40,7 @@
 
 对于硬件绘制，我们通过调用 OpenGL ES 接口利用 GPU 完成绘制。
 
-![img](https://static001.geekbang.org/resource/image/cf/31/cf13332abe87502c7d60ff78b6aeb931.png)
+![img](..\images\opengles_api.png)
 
 Android 7.0 把 OpenGL ES 升级到最新的 3.2 版本同时，还添加了对[Vulkan](https://source.android.com/devices/graphics/arch-vulkan)的支持。Vulkan 是用于高性能 3D 图形的低开销、跨平台 API。相比 OpenGL ES，Vulkan 在改善功耗、多核优化提升绘图调用上有着非常明显的优势。
 
@@ -48,7 +50,7 @@ Android 7.0 把 OpenGL ES 升级到最新的 3.2 版本同时，还添加了对[
 
 看下渲染架构：
 
-![img](https://static001.geekbang.org/resource/image/7e/66/7efc5431b860634224f1cd7dda8abd66.png)
+![img](..\images\android图形架构.png)
 
 如果把应用程序图形渲染过程当作一次绘画过程，那么绘画过程中 Android 的各个图形组件的作用是：
 
@@ -61,7 +63,7 @@ Android 7.0 把 OpenGL ES 升级到最新的 3.2 版本同时，还添加了对[
 
 在 Android 3.0 之前，或者没有启用硬件加速时，系统都会使用软件方式来渲染 UI。
 
-![img](https://static001.geekbang.org/resource/image/8f/97/8f85be65392fd7b575393e5665f49a97.png)
+![img](..\images\view渲染过程.png)
 
 整个流程如上图所示：
 
@@ -80,9 +82,11 @@ Android 7.0 把 OpenGL ES 升级到最新的 3.2 版本同时，还添加了对[
 
 硬件加速绘制与软件绘制整个流程差异非常大，最核心就是我们通过 GPU 完成 Graphic Buffer 的内容绘制。此外硬件绘制还引入了一个 DisplayList 的概念，每个 View 内部都有一个 DisplayList，当某个 View 需要重绘时，将它标记为 Dirty。
 
+**view重绘**：
+
 当需要重绘时，仅仅只需要重绘一个 View 的 DisplayList，而不是像软件绘制那样需要向上递归。这样可以大大减少绘图的操作数量，因而提高了渲染效率。
 
-![img](https://static001.geekbang.org/resource/image/f9/51/f9da12b7c4d49f47d650cd8e14303c51.png)
+![img](..\images\view重绘.png)
 
 ##### Android 4.1：Project Butter
 
@@ -148,7 +152,7 @@ UI 主线程“既当爹又当妈”，任务过于繁重。如果整个渲染�
 
 CPU 将数据同步（sync）给 GPU 之后，一般不会阻塞等待 GPU 渲染完毕，而是通知结束后就返回。而 RenderThread 承担了比较多的绘制工作，分担了主线程很多压力，提高了 UI 线程的响应速度。
 
-![img](https://static001.geekbang.org/resource/image/7f/7d/7f349aefe7a081259218af30b9a9fc7d.png)
+![img](..\images\view绘制流水线模型.png)
 
 #### 未来
 
@@ -159,6 +163,58 @@ CPU 将数据同步（sync）给 GPU 之后，一般不会阻塞等待 GPU 渲�
 今天我们通过 Android 渲染的演进历程，一步一步加深对 Android 渲染机制的理解，这对我们 UI 渲染优化工作会有很大的帮助。
 
 但是凡事都要两面看**，硬件加速绘制虽然极大地提高了 Android 系统显示和刷新的速度**，但它也存在那么一些问题。**一方面是内存消耗**，OpenGL API 调用以及 Graphic Buffer 缓冲区会占用至少几 MB 的内存，而实际上会占用更多一些。**不过最严重的还是兼容性问题**，部分绘制函数不支持是其中一部分原因，更可怕的是硬件加速绘制流程本身的 Bug。由于 Android 每个版本对渲染模块都做了一些重构，在某些场景经常会出现一些莫名其妙的问题。
+
+#### UI 渲染测量
+
+##### 1)图形化界面工具:
+
+- 测试工具：Profile GPU Rendering 和 Show GPU Overdraw，具体的使用方法你可以参考[《检查 GPU 渲染速度和绘制过度》](https://developer.android.google.cn/studio/profile/cpu-profiler)。
+
+- 问题定位工具：Systrace 和 Tracer for OpenGL ES，具体使用方法可以参考《Slow rendering》。
+
+- GAPID: Android Studio 3.1 之后，Android 推荐使用Graphics API Debugger（GAPID）
+
+##### 2)自动化测量工具:
+
+- gfxinfogfxinfo 可以输出包含各阶段发生的动画以及帧相关的性能信息，具体命令如下：
+
+  ```
+  adb shell dumpsys gfxinfo 包名
+  ```
+
+- SurfaceFlinger
+
+  你可以通过下面的命令拿到系统 SurfaceFlinger 相关的信息：
+
+  ```
+  adb shell dumpsys SurfaceFlinger
+  ```
+
+##### 3）view的加载时长    
+
+```
+LayoutInflaterCompat.setFactory2(getLayoutInflater(), new LayoutInflater.Factory2() {
+   @Nullable
+   @Override
+   public View onCreateView(@Nullable View parent, @NonNull String name, @NonNull Context context, @NonNull AttributeSet attrs) {
+        if(TextUtils.equals("TextView", name)){
+            //可以创建自定义view
+        }
+        long startTime = System.currentTimeMillis();
+        View view = getDelegate().createView(parent,name,context,attrs);
+        Log.d("Activity", "name cost:"+ (System.currentTimeMillis()-startTime));
+        return view;
+   }
+
+   @Nullable
+    @Override
+    public View onCreateView(@NonNull String name, @NonNull Context context, @NonNull AttributeSet attrs) {
+                return null;
+    }
+});
+```
+
+
 
 #### UI优化常用手段：
 
@@ -261,7 +317,9 @@ Litho 虽然强大，但也有自己的缺点。它为了实现 measure/layout �
 
 ##### 2、Flutter：自己的布局 + 渲染引擎
 
-这块暂时就不研究了。
+![](..\images\flutter架构.png)
+
+​    [《Flutter 原理与实践》](https://tech.meituan.com/2018/08/09/waimai-flutter-practice.html)
 
 ##### 3、RenderThread 与 RenderScript
 
@@ -273,11 +331,15 @@ Litho 虽然强大，但也有自己的缺点。它为了实现 measure/layout �
 
 我们可以通过[RenderScript](https://developer.android.com/guide/topics/renderscript/compute)，它是 Android 操作系统上的一套 API。它基于异构计算思想，专门用于密集型计算。RenderScript 提供了三个基本工具：一个硬件无关的通用计算 API；一个类似于 CUDA、OpenCL 和 GLSL 的计算 API；一个类[C99](https://zh.wikipedia.org/wiki/C99)的脚本语言。允许开发者以较少的代码实现功能复杂且性能优越的应用程序。
 
-示例：
+如何将它们应用到我们的项目中？你可以参考下面的一些实践方案：
 
-[RenderScript 渲染利器](https://www.jianshu.com/p/b72da42e1463)
+  [RenderScript 渲染利器](https://www.jianshu.com/p/b72da42e1463)
 
-[RenderScript : 简单而快速的图像处理](http://www.jcodecraeer.com/a/anzhuokaifa/androidkaifa/2016/0504/4205.html?utm_source=itdadao&utm_medium=referral)
+  [RenderScript :简单而快速的图像处理](http://www.jcodecraeer.com/a/anzhuokaifa/androidkaifa/2016/0504/4205.html?utm_source=itdadao&utm_medium=referral)
+
+  [Android RenderScript 简单高效实现图片的高斯模糊效果](http://www.jcodecraeer.com/a/anzhuokaifa/androidkaifa/2016/0504/4205.html?utm_source=itdadao&utm_medium=referral)
+
+
 
 #### 参考文档
 
@@ -287,7 +349,9 @@ Litho 虽然强大，但也有自己的缺点。它为了实现 measure/layout �
 
 3，<https://zhuanlan.zhihu.com/p/87332093> 安卓子线程更新UI.
 
-4，https://www.jianshu.com/p/0d18ed263db6 APkChecker
+  4，https://www.jianshu.com/p/0d18ed263db6 APkChecker
+
+  5，[Litho的使用及原理剖析](https://tech.meituan.com/2019/03/14/litho-use-and-principle-analysis.html)
 
 
 

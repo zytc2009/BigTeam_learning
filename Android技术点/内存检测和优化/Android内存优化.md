@@ -210,6 +210,31 @@ Debug.getRuntimeStat("art.gc.blocking-gc-time");
 
 需要特别注意阻塞式 GC 的次数和耗时，因为它会暂停应用线程，可能导致应用发生卡顿。我们也可以更加细粒度地分应用场景统计，例如启动、进入详情页、进入播放页面等关键场景。
 
+##### 4、ARTHook监控
+
+  可以用epic，也能实现类监控功能，主要是线下监控    
+
+```
+以ImageView的监控为例，同理可以写Thread监控
+class ThreadMethodHook extends XC_MethodHook{
+    @Override
+    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+        super.afterHookedMethod(param);
+        ImageView imageView = (ImageView) param.thisObject;
+        checkBitmap(imageView);
+    }
+}
+//Hook构造方法
+DexposedBridge.hookAllConstructors(ImageView.class, new XC_MethodHook() {
+    @Override
+    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+        super.afterHookedMethod(param);
+        //hook setImageBitmap方法，因为setImageBitmap有参数，所以指定参数类型
+        DexposedBridge.findAndHookMethod(ImageView.class, "setImageBitmap",Bitmap.class, new ThreadMethodHook());
+    }
+});
+```
+
 
 
 **线上监控方案**：

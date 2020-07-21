@@ -382,7 +382,7 @@ View getViewForPosition(int position, boolean dryRun) {
 
 我们可以注意到这一层缓存的判断条件，isPrelayout。只有当我们需要**用动画改变屏幕上已有ViewHolder**时，会通过这个条件。并且此时在真正发生改变之前。
 
-mChangedScrap 表示的是数据已经改变的但还在屏幕中的ViewHolder列表。所以在改动之前，我们会从中获取ViewHolder。
+**mChangedScrap 表示的是数据已经改变的但还在屏幕中的ViewHolder列表**。所以在改动之前，我们会从中获取ViewHolder。
 
 ```java
 ViewHolder tryGetViewHolderForPositionByDeadline(int position,
@@ -1073,13 +1073,17 @@ listView 是二级缓存
 
 mActiveViews：屏幕内itemView快速重用不需要重写调用createView和bindView；
 
-onSCrapViews：缓存离开屏幕的itemView，目的是让即将进入屏幕的itemView重用。
+onScrapViews：缓存离开屏幕的itemView，目的是让即将进入屏幕的itemView重用。
 
 RecycleView 是四级缓存:
 
 mAttachedScrap：同listview的mActiveViews；
 
-mCachedViews和RecyclerViewPool同listView的onScrapViews；mViewCachedExtension：需要用户自定义实现默认不实现RecyclerView比ListView多两级缓存，支持多个离ItemView缓存，支持开发者自定义缓存处理逻辑，支持多个RecyclerView共用同一个RecyclerViewPool(缓存池)，需要自己创建维护，并设置给RecyclerView。在特定场景下有优势（如viewPage下多个列表）
+mCachedViews和RecyclerViewPool同listView的onScrapViews；mCacheViews只存两个viewHolder；
+
+mViewCachedExtension：需要用户自定义实现默认不实现。
+
+RecyclerView比ListView多两级缓存，支持多个ItemView缓存，支持开发者自定义缓存处理逻辑，支持**多个RecyclerView共用同一个RecyclerViewPool(缓存池)，需要自己创建维护**，并设置给RecyclerView。RecyclerViewPool默认最多缓存5个viewholder。在特定场景下有优势（如viewPage下多个列表）
 
 **缓存基本一致**：
 

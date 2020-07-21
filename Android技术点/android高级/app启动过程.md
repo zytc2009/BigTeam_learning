@@ -1,3 +1,5 @@
+[Toc]
+
 ### Zygote启动
 
 Zygote作用:
@@ -35,7 +37,7 @@ ZygoteInit.main方法主要做四件事：1.注册soceket，2.启动类加载器
 
 >   RuntimeInit.zygoteInit : 
 >
->   	 nativeZygoteInit（）- 》ProcessState->startThreadPool() 启用binder机制
+>   	nativeZygoteInit（）- 》ProcessState->startThreadPool() 启用binder机制
 >	
 >    	applicationInit()  -》 SystemServer.main()
 
@@ -43,7 +45,7 @@ ZygoteInit.main方法主要做四件事：1.注册soceket，2.启动类加载器
 
 > 1.Looper.prepareMainLooper(); 
 >
-> 2.createSystemContext(),创建ActivityThread，通知主线程application初始化; 
+> 2.createSystemContext(),创建ActivityThread，通知AMS进程创建完了，然后AMS通知主线程application初始化; 
 >
 > 3.创建SystemServiceManager；
 >
@@ -108,11 +110,121 @@ private void handleBindApplication(AppBindData data) {
 
 ```
 
-**ActivityThread**
+#### Zygote孵化应用进程
+
+前面分析了Zygote如何启动SystemServer子进程，接下来再分析Zygote如何启动其他子进程，也就是创建应用程序进程的过程，这个过程和创建SystemServer进程基本一样。当点击Launcher主界面的一个应用程序图标时，如果这个应用程序还未曾启动，就会启动它。而判断应用程序有没有启动和去启动应用程序都由核心服务AMS来做，它的startProcessLocked()方法会真正地启动应用程序子进程。
+
+下面为AMS的startProcessLocked()方法：
+
+    private final void startProcessLocked(ProcessRecord app, String hostingType,
+            String hostingNameStr, String abiOverride, String entryPoint, String[] entryPointArgs) {
+        ......
+        if (entryPoint == null) entryPoint = "android.app.ActivityThread";
+        ......
+        ProcessStartResult startResult;
+        startResult = Process.start(entryPoint,
+                        app.processName, uid, uid, gids, runtimeFlags, mountExternal,
+                        app.info.targetSdkVersion, seInfo, requiredAbi, instructionSet,app.info.dataDir, invokeWith, entryPointArgs);
+            }
+        .......
+    }
+AMS的startProcessLocked()方法调用Process类的start()方法为应用程序创建新的进程，这里的参数entryPoint为“android.app.ActivityThread”，它是传进去的第一个参数，也就是程序初始化进程时要加载的主文件Java类。当应用进程启动之后，会把这个类加载到进程，调用它的main()方法作为应用程序进程的入口。
+Process类的start()直接调用了ZygoteProcess类的start()方法，该start()方法有直接调用了ZygoteProcess类的startViaZygote()方法，下面看看该方法实现：
+
+    private Process.ProcessStartResult startViaZygote(final String processClass,final String niceName,final int uid, final int gid,...)throws ZygoteStartFailedEx {
+        ArrayList<String> argsForZygote = new ArrayList<String>();
+        argsForZygote.add("--runtime-args");
+        argsForZygote.add("--setuid=" + uid);
+        argsForZygote.add("--setgid=" + gid);
+        ......
+        synchronized(mLock) {
+            return zygoteSendArgsAndGetResult(openZygoteSocketIfNeeded(abi), argsForZygote);
+        }
+    }
+首先给它设置值，包括uid、gid等。这些值是应用程序在安装时系统分配好的。接着调用openZygoteSocketIfNeeded()方法来链接“zygote”Socket，链接Socket成功之后，就会调用zygoteSendArgsAndGetResult()方法来进一步处理。
+
+先来看看openZygoteSocketIfNeeded()方法：
+
+    private ZygoteState openZygoteSocketIfNeeded(String abi) throws ZygoteStartFailedEx {
+        .......
+        if (primaryZygoteState == null || primaryZygoteState.isClosed()) {
+            try {
+                primaryZygoteState = ZygoteState.connect(mSocket);
+            }
+        .......
+    }
+方法中的mSocket的值是“zygote”，通过connect()方法去链接“zygote”Socket。
+
+接着看看zygoteSendArgsAndGetResult()方法：
+
+    private static Process.ProcessStartResult zygoteSendArgsAndGetResult(
+            ZygoteState zygoteState, ArrayList<String> args)
+            throws ZygoteStartFailedEx {
+        try {
+            ........
+            final BufferedWriter writer = zygoteState.writer;
+            final DataInputStream inputStream = zygoteState.inputStream;
+    
+            writer.write(Integer.toString(args.size()));
+            writer.newLine();
+    
+            for (int i = 0; i < sz; i++) {
+                String arg = args.get(i);
+                writer.write(arg);
+                writer.newLine();
+            }
+            writer.flush();
+            .......
+    }
+通过Socket写入流writer把前面传过来的那些参数写进去，Socket即ZygoteServer类的runSelectLoop()方法监听。写入这些数据之后，ZygoteServer类的runSelectLoop()方法就能被监听到。
+看一下runSelectLoop()方法的关键实现代码：
+
+    Runnable runSelectLoop(String abiList) {
+        .......
+        if (i == 0) {
+            ZygoteConnection newPeer = acceptCommandPeer(abiList);
+            peers.add(newPeer);
+            fds.add(newPeer.getFileDesciptor());
+        } else {
+            ZygoteConnection connection = peers.get(i);
+            final Runnable command = connection.processOneCommand(this);
+        ......
+    }
+进入ZygoteConnection类的processOneCommand()方法后：
+
+    Runnable processOneCommand(ZygoteServer zygoteServer) {
+        ........
+        pid = Zygote.forkAndSpecialize(parsedArgs.uid, parsedArgs.gid, parsedArgs.gids,
+                parsedArgs.runtimeFlags, rlimits, parsedArgs.mountExternal, parsedArgs.seInfo,
+                parsedArgs.niceName, fdsToClose, fdsToIgnore, parsedArgs.instructionSet,
+                parsedArgs.appDataDir);
+    
+        try {
+            if (pid == 0) {
+                // in child
+                zygoteServer.setForkChild();
+    
+                zygoteServer.closeServerSocket();
+                IoUtils.closeQuietly(serverPipeFd);
+                serverPipeFd = null;
+    
+                return handleChildProc(parsedArgs, descriptors, childPipeFd);
+        ........
+    }
+之前启动SystemServer进程的代码有点相似。此处是通过Zygote.forkAndSpecialize()来fork新的应用进程，而启动systemserver进程是通过Zygote.forkSystemServer()来fork SystemServer进程。这里通过handleChildProc()方法处理，而之前是嗲偶用handleSystemServerProcess()来处理。通过fork新的应用程序进程之后，返回pid等于0就表示进入子进程，于是调用handleChildProc()方法进一步处理：
+
+    private Runnable handleChildProc(Arguments parsedArgs, FileDescriptor[] descriptors,FileDescriptor pipeFd) { 
+        ........
+        return ZygoteInit.zygoteInit(parsedArgs.targetSdkVersion, parsedArgs.remainingArgs,null /* classLoader */);
+        .......
+    }
+到此处，后面便和上面一样的了，唯一不同的是，SystemServer进程启动之后进入的是主类SystemServer.java的main()函数，而这里应用程序启动起来后进入的是主类是ActivityThread.java的main()函数。
+
+
+
+#### **ActivityThread**
 
 负责通知AMS，创建application，启动activity，启动service等
-
-
 
 **注意细节**：
 
@@ -241,8 +353,6 @@ public Application makeApplication(boolean forceDefaultAppClass,
 #### **activity启动**:
 
 ContextImpl的startActivity，然后内部会通过Instrumentation来尝试启动Activity，这是一个跨进程过程，它会调用ams的startActivity方法，当ams校验完activity的合法性后，会通过ApplicationThread回调到我们的进程，这也是一次跨进程过程，而applicationThread就是一个binder，回调逻辑是在binder线程池中完成的，所以需要通过Handler H将其切换到ui线程，第一个消息是LAUNCH_ACTIVITY，它对应handleLaunchActivity，在这个方法里完成了Activity的创建和启动，接着，在activity的onResume中，activity的内容将开始渲染到window上，然后开始绘制直到我们看见
-
-
 
 **启动过程**：**创建activity对象，准备好application，创建ContextImpl，attach上下文，生命周期回调**
 

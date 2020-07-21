@@ -235,11 +235,11 @@ BitmapRegionDecoder提供了一系列的newInstance方法来构造对象，支�
 
 #### 初识ConstraintLayout及性能优势
 
-优点：减少布局嵌套，提高性能；可以按照比例约束控件的位置和尺寸，更好的适配屏幕。与relative类似但是要比relitiveLayout强大。
+优点：减少布局嵌套，提高性能；可以按照比例约束控件的位置和尺寸，更好的适配屏幕。与relative类似但是要比relativeLayout强大。
 
 1. 相对位置：相对父View或相对其他View或使用辅助工具：GuildeLine ，barrier（屏障）
 
- layout_constraintLeft_toLeftOf = “parent”,layout_constraintRight_toRightOf =”@id/otherviewid”
+ layout_constraintLeft_toLeftOf = “parent”,layout_constraintRi0ght_toRightOf =”@id/otherviewid”
 
  …Top,Bottom,Start,End…
 
@@ -287,7 +287,7 @@ app:layout_goneMarginLeft = “”
 
 6. 相对角度:用一个角度和一个距离约束位置
 
-app：layout_constraintCircle = “@id/textview1” //相对的view
+app:layout_constraintCircle = “@id/textview1” //相对的view
 
 app:layout_constraintCircleAngle = “120” //角度
 
@@ -295,7 +295,7 @@ app:layout_constraintRadius = “150dp” //半径（距离）
 
 7. 辅助工具
 
-##### **Guildline**
+##### **Guildeline**
 
 Guideline是一种特殊的控件，它在界面上是看不见的（被标记为View.Gone），只是用来做参考线。它一般有水平和垂直两种。
 
@@ -380,7 +380,7 @@ findViewById(R.id.group).setVisibility(View.GONE);//把btn_a和btn_b同时设置
 
 两个或两个以上的控件相互约束成为一条链。
 
-可以在链头中设置链的样式
+可以在**链头**中设置链的样式
 
  CHAIN_SPEAD //展开元素  默认的
 
@@ -711,14 +711,14 @@ FragmentStatePagerAdapter会完全销毁滑动过去的item，当需要初始化
 
 3. 在build.gradle中配置externalNativeBuild。
 
-在defultConfig中配置cmake的命令参数
+   在defultConfig中配置cmake的命令参数
 
-在defultConfig之外定义cmake构建脚本cmakelist的路径。
+   在defultConfig之外定义cmake构建脚本cmakelist的路径。
 
 4. cmakelist中定义了cmake最小版本号，编译library的名称；模式shared可以编译成so，static不会编译；设置cpp原生代码路径等。
 5. 在java包下创建类，在类中定义native方法。
 6. 在cpp目录下创建.cpp的类，定义方法名为java_包名_类名_java中native方法名的方法实现方法。
-7. 在java的naïve方法类中 静态块加载library  system.loadlibrary(“native_lib”)
+7. 在java的native方法类中 静态块加载library  system.loadlibrary(“native_lib”)
 8. 也可以编译成so，提供给其他项目使用。
 
 #### SO的适配

@@ -33,15 +33,13 @@
 
 #### 4）[线程](java基础/线程.md)
 
-#### 5）[泛型](java基础/java泛型.md)
+#### 5）[线程池](java基础/线程池.md)
 
 #### 6）[java反射](java基础/java反射.md)
 
 #### 7）[java注解](java基础/java注解.md)
 
-#### 8）[线程池](java基础/线程池.md)
-
-#### 9）[JNI相关](JNI相关.md)
+#### 9）[JNI相关](java基础/JNI相关.md)
 
 ## 二、Android篇
 

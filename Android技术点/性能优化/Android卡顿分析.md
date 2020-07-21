@@ -1091,6 +1091,8 @@ ANR-WatchDog是一种非侵入式的ANR监控方案，它能够弥补我们在�
 
 对于实现全局替换handler的gradle插件，除了使用AspectJ实现之外，这里推荐一个已有的项目：[DroidAssist](httpshttps://github.com/didi/DroidAssist)。
 
+另一种方法是**ARTHook**，可以用epic，也能实现类替换功能
+
 
 ###### 4、耗时盲区监控方案总结
 

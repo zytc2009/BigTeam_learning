@@ -27,12 +27,12 @@ class Solution {
         if(root.left != null){
             postorderTraversal(root.left);
         }
+				
+        result.add(root.val);
 
         if(root.right != null){
             postorderTraversal(root.right);
         }
-
-        result.add(root.val);
 
         return result;
     }

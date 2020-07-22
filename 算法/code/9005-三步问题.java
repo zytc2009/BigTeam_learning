@@ -38,7 +38,7 @@ class Solution {
         dp[2] = 2;
         dp[3] = 4;
 
-        int mod = 1000000007;
+        int mod = 10 0000 0007;
 
         for(int i = 4;i<=n;i++){
             dp[i] = dp[i-1] % mod ;

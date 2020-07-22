@@ -34,7 +34,7 @@ class Solution {
         quene.offer(root);
         while(!quene.isEmpty()){
             int size = quene.size();
-
+			//利用 BFS 进行层次遍历，记录下每层的最后一个元素。
             for(int i = 0;i < size;i++){
                 TreeNode temp = quene.poll();
 

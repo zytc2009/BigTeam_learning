@@ -221,7 +221,10 @@ public class GCTest {
 
 https://www.jianshu.com/p/3ca14ec823d7
 
+#### java类加载器的加载流程。
+
 **Person person = new Person();这句话到底做了什么事情呢？** 
+
 1.javac编译.java源文件形成.class字节码文件; 
 2.new  Person() 对象时， 先检查有没有父类， 有父类， 类加载器(ClassLoader)先将父类的Class文件读入内存， 创建一个java.lang.Class对象，然后加载子类，类加载器将子类的Class文件读入内存，创建一个java.lang.Class对象;
 3.先初始化父类的静态属性，再初始化父类的静态代码块； 

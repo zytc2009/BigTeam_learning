@@ -177,8 +177,6 @@ dependencies {
 }
 ```
 
-
-
 ### 启动Server
 
 ```shell
@@ -192,9 +190,17 @@ sudo npm install nodejs
 sudo npm install bufferutil
 sudo npm install utf-8-validate
 
-node server.js
+#下载https://github.com/cmyeyi/webrtc_for_android.git
+#multipeers_server目录
+node index.js
+#就可以安装android客户端，用两个手机测试了
+
 ```
 
 
 
-链接：https://www.jianshu.com/p/e0239bb43f48
+相关文章
+
+1.https://www.jianshu.com/p/e0239bb43f48
+
+2.https://github.com/cmyeyi/webrtc_for_android.git

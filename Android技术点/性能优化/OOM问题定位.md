@@ -225,11 +225,13 @@ for (int i = 0; i < length ; i++) {
 
 ### 内存镜像dump
 
-利用**Copy-on-write**机制fork子进程dump,可以快速实现dump内存镜像
+快手开发的框架，利用**Copy-on-write**机制fork子进程dump,可以快速实现dump内存镜像
 
+#### Java-oom 组件介绍
 
-
-
+- **内存监控组件** 定时采集内存资源占用情况，超过阈值触发内存镜像采集，决定镜像dump与分析时机，关键代码参考`Monitor.java`
+- **内存镜像采集组件** 高性能内存镜像采集组件，包含fork dump和strip dump两个部分，关键代码参考`HeapDumper.java`
+- **内存镜像解析组件** 高性能内存镜像解析组件，基于shark解析器定制优化，泄露判定关键代码参考`LeakDetector.java`
 
 
 

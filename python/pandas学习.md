@@ -301,4 +301,15 @@ Out[75]:
 first wangxing 　　 24 　　    男
 second dadiao 　　30 　　　　女
 
+
+
+
+
+
+
 参考http://wiki.jikexueyuan.com/project/start-learning-python/312.html所整理。
+
+
+
+
+

@@ -177,6 +177,83 @@ dependencies {
 }
 ```
 
+### Turn Server
+
+//参考https://blog.csdn.net/u011077027/article/details/86225524
+
+```
+sudo apt install coturn 
+which turnserver
+```
+
+/usr/local/etc/turnserver.conf
+
+配置 如下
+
+```shell
+verbose
+fingerprint
+lt-cred-mech
+realm=test 
+user=whb:123456
+stale-nonce
+no-loopback-peers
+no-multicast-peers
+mobility
+no-cli
+12345678910
+```
+
+或者下面这个配置，只配置stun（stun-only）
+
+```shell
+listening-ip=本地ip
+listening-port=3478
+#relay-ip=0.0.0.0
+external-ip=111.196.163.80
+min-port=59000
+max-port=65000
+Verbose
+fingerprint
+no-stdout-log
+syslog
+user=whb:123456
+no-tcp
+no-tls
+no-tcp-relay
+stun-only
+# 下面是配置证书，不懂就问后端人员怎么用openssl生成这个
+cert=pem/turn_server_cert.pem 
+pkey=pem/turn_server_pkey.pem 
+#secure-stun
+```
+
+启动:
+
+```shell
+# 如果按照上面的配置直接运行
+turnserver
+
+# 如果没有配置上述配置文件，可采用其他运行方法
+/usr/local/bin/turnserver --syslog -a -f --min-port=32355 --max-port=65535 --user=dds:123456 -r dds --cert=turn_server_cert.pem --pkey=turn_server_pkey.pem --log-file=stdout -v
+
+--syslog 使用系统日志
+-a 长期验证机制
+-f 使用指纹
+--min-port   起始用的最小端口
+--max-port   最大端口号
+--user=dds:123456  turn用户名和密码
+-r realm组别
+--cert PEM格式的证书
+--pkey PEM格式的私钥文件
+-l, --log-file,<filename> 指定日志文件
+-v verbose
+```
+
+测试地址，请分别测试stun和turn，relay代表turn
+
+https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/
+
 ### 启动Server
 
 ```shell
@@ -194,13 +271,60 @@ sudo npm install utf-8-validate
 #multipeers_server目录
 node index.js
 #就可以安装android客户端，用两个手机测试了
+```
 
+windows：我在windows安装了NodeJs，用他启动服务，启动前先执行npm install 安装依赖的模块, 然后执行node xx.js. 如果执行失败，npm audit fix修复一下不一致版本的模块
+
+1. 下载 代码
+
+```shell
+# 代码检出来
+git clone https://github.com/ddssingsong/webrtc_server_node.git  
+cd webrtc_server
+123
+```
+
+2. 修改`/public/dist/js/SkyRTC-client.js`，设置穿透服务器，可查看https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/
+
+```js
+   var iceServer = {
+        "iceServers": [
+          {
+            "url": "stun:stun.l.google.com:19302"
+          },
+          {
+            "url": "stun:111.196.163.80:3478"
+          },
+          {
+             "url": "turn:111.196.163.80:3478",
+             "username":"ddssingsong",
+             "credential":"123456"
+          }
+        ]
+    };
+
+12345678910111213141516
+```
+
+3. 修改`/public/dist/js/conn.js`
+
+```js
+## 最后一行
+##  如果没有配wss代理
+rtc.connect("ws:" + window.location.href.substring(window.location.protocol.length).split('#')[0], window.location.hash.slice(1));
+
+如果配了nginx wss代理
+rtc.connect("wss:" + window.location.href.substring(window.location.protocol.length).split('#')[0]+"/wss", window.location.hash.slice(1));
+
+# 后面的那个“/wss”是根据自己配的代理路径
 ```
 
 
 
 相关文章
 
-1.https://www.jianshu.com/p/e0239bb43f48
+1. https://www.jianshu.com/p/e0239bb43f48
 
-2.https://github.com/cmyeyi/webrtc_for_android.git
+2. https://github.com/cmyeyi/webrtc_for_android.git （含client和server）
+
+3. [快速搭建 视频通话 视频会议](https://blog.csdn.net/u011077027/article/details/86225524)（含client和server）

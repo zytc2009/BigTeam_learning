@@ -44,8 +44,8 @@ public void setFirstName(String firstName) {
 
 ## 包级函数
 
-在 `com.kotlin.simple` 包内的 `InteropKotlin.kt` 文件中声明的所有的函数和属性，包括扩展函数，
-都编译成一个名为 `com.kotlin.simple.InteropKotlinKt` 的 Java 类的静态方法。
+在 `com.kotlin.simple` 包内的 `app.kt` 文件中声明的所有的函数和属性，包括扩展函数，
+都编译成一个名为 `com.kotlin.simple.appKt` 的 Java 类的静态方法。
 
 
 
@@ -61,7 +61,7 @@ fun getTime() { /*……*/ }
 ``` java
 // Java
 //调用包级函数
-InteropKotlinKt.getTime();
+appKt.getTime();
 ```
 
 可以使用 `@JvmName` 注解修改生成的 Java 类的类名：
@@ -89,10 +89,8 @@ new com.kotlin.simple.simple2.Util().hashCode();
 Simple2Name.getSimpleName();
 ```
 
-
 如果多个文件中生成了相同的 Java 类名（包名相同并且类名相同或者有相同的
-[`@JvmName`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-name/index.html) 注解）通常是错误的。然而，编译器能够生成一个单一的 Java 外观<!--
--->类，它具有指定的名称且包含来自所有文件中具有该名称的所有声明。
+[`@JvmName`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-name/index.html) 注解）通常是错误的。然而，编译器能够生成一个单一的 Java 外观类，它具有指定的名称且包含来自所有文件中具有该名称的所有声明。
 要启用生成这样的外观，请在所有相关文件中使用 [`@JvmMultifileClass`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-multifile-class/index.html) 注解。
 
 
@@ -111,7 +109,7 @@ fun getSimpleName() {
 }
 ```
 
-在创建一个 `Simple3.kt` 使用和 `Simple2.kt` 一样的代码:
+再创建一个 `Simple3.kt` 使用和 `Simple2.kt` 一样的代码:
 
 
 ```kotlin

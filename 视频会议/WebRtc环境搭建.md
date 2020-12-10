@@ -273,7 +273,7 @@ node index.js
 #就可以安装android客户端，用两个手机测试了
 ```
 
-windows：我在windows安装了NodeJs，用他启动服务，启动前先执行npm install 安装依赖的模块, 然后执行node xx.js. 如果执行失败，npm audit fix修复一下不一致版本的模块
+**windows**：我在windows安装了NodeJs，用他启动服务，启动前先执行npm install 安装依赖的模块, 然后执行node xx.js. 如果执行失败，npm audit fix修复一下不一致版本的模块
 
 1. 下载 代码
 

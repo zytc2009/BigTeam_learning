@@ -132,8 +132,6 @@ Exception in thread "main" java.lang.NullPointerException:
 
 如果 `str` 的内容不是数字返回 null：
 
-
-
 ```kotlin
 fun parseInt(str: String): Int? {
     // ……
@@ -142,13 +140,10 @@ fun parseInt(str: String): Int? {
 
 使用返回可空值的函数:
 
-
-
 ```kotlin
 fun parseInt(str: String): Int? {
     return str.toIntOrNull()
 }
-
 
 fun printProduct(arg1: String, arg2: String) {
     val x = parseInt(arg1)
@@ -163,7 +158,6 @@ fun printProduct(arg1: String, arg2: String) {
         println("'$arg1' or '$arg2' is not a number")
     }    
 }
-
 
 fun main() {
     printProduct("6", "7")
@@ -219,11 +213,12 @@ Kotlin 的类型系统旨在从我们的代码中消除 `NullPointerException`�
   超类的构造函数调用一个开放成员 该成员在派生中类的实现使用了未初始化的状态
 
 * Java 互操作：
- 
+
   * 企图访问 平台类型的 `null` 引用的成员；
   * 用于具有错误可空性的 Java 互操作的泛型类型，例如一段 Java 代码可能会向 Kotlin 的 `MutableList<String>` 中加入 `null`，这意味着应该使用 `MutableList<String?>` 来处理它；
   * 由外部 Java 代码引发的其他问题。
   
+
 关于平台类型：请参考 《kotlin-中调用Java详解》
 
 在 Kotlin 中，类型系统区分一个引用可以容纳 null 还是不能容纳非空引用

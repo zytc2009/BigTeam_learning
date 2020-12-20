@@ -25,6 +25,8 @@ cd webrtc_android # 注意接下来执行命令始终在这个目录下
 
    fetch --nohooks webrtc_android
 
+​	//fetch --nohooks webrtc_ios
+
 6.设置 gclient 代理，原因是 gclient 无法使用 $HTTP_PROXY 设置代理，
 
    而要使用 .boto 文件来设置。这就是上文提到的坑:)不过我没有设置
@@ -84,9 +86,15 @@ gn的输出就是扩展名为 .ninja 的文件，这些文件保存在编译目�
 
 编译所有目标
 
-```
+```shell
 cd webrtc_android/src
-gn gen out/Debug --args='target_os="android" target_cpu="arm"'
+//android编译
+gn gen out/android --args='target_os="android" target_cpu="arm"'
+//ios版本 
+gn gen out/ios --args='target_os="ios" target_cpu="arm64" is_debug=true'
+//mac平台编译，待验证
+gn gen out/mac --args='target_os="mac" target_cpu="x64" use_rtti=true is_debug=true is_component_build=false rtc_use_h264=true' --ide=xcode --workplace="audio_fec"
+
 ninja -C out/Debug
 ```
 

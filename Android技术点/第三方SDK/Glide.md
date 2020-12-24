@@ -4,7 +4,7 @@ Glide：
 RequestBuilder构建任务SingleRequest添加到RequestManager请求队列，并执行
 ```
 
-```
+```java
 RequestManager：添加任务
 void track(Target<?> target, Request request) {
   targetTracker.track(target);
@@ -12,7 +12,7 @@ void track(Target<?> target, Request request) {
 }
 ```
 
-```
+```java
 RequestTracker类：开始任务
 public void runRequest(Request request) {
   requests.add(request);
@@ -26,7 +26,7 @@ public void runRequest(Request request) {
 
 SingleRequest的begin()方法
 
-```
+```java
 @Override
 public void begin() {
   ...
@@ -45,7 +45,7 @@ public void onSizeReady(int width, int height) {
 
 Engine类：
 
-```
+```java
 public <R> LoadStatus load(...) {
   //key
   EngineKey key = keyFactory.buildKey(model, signature, width, height, transformations,
@@ -79,7 +79,7 @@ public <R> LoadStatus load(...) {
 }
 ```
 
-```
+```java
 DecodeJob的run方法：
 public void run() {
 	...
@@ -89,7 +89,7 @@ public void run() {
 
 ```
 
-```
+```java
 HttpGlideUrlLoader:
   public LoadData<InputStream> buildLoadData(GlideUrl model, int width, int height,
       Options options) {
@@ -110,7 +110,7 @@ public void loadData(Priority priority, DataCallback<? super InputStream> callba
 }
 ```
 
-```
+```java
 SourceGenerator:
   @Override
   public void onDataReady(Object data) {
@@ -126,7 +126,7 @@ SourceGenerator:
 
 DecodeJob的onDataFetcherReady方法
 
-```
+```java
 @Override
 public void onDataFetcherReady(Key sourceKey, Object data, DataFetcher<?> fetcher,
     DataSource dataSource, Key attemptedKey) {
@@ -148,7 +148,7 @@ private void decodeFromRetrievedData() {
 }
 ```
 
-```
+```java
 StreamBitmapDecoder类:
 @Override
 public Resource<Bitmap> decode(InputStream source, int width, int height, Options options){
@@ -194,7 +194,7 @@ SizeConfigStrategy：4.4以上
 AttributeStrategy：4.4之前版本, inBitmap大小必须精确匹配要解码的图片
 ```
 
-```
+```java
 BitmapResource：//管理图片
   @Override
   public void recycle() {//回收图片加入缓存池
@@ -203,5 +203,35 @@ BitmapResource：//管理图片
 
 ```
 
+**如果数据需要加解密，需要自定义处理**
 
+```java
+public class BlueGlideModule extends AppGlideModule {
 
+    @RequiresApi(api = Build.VERSION_CODES.P)
+    @Override
+    public void registerComponents(@NonNull Context context, @NonNull Glide glide, @NonNull Registry registry) {
+        Downsampler downsampler =
+                new Downsampler(
+                        registry.getImageHeaderParsers(), context.getResources().getDisplayMetrics(), glide.getBitmapPool(), glide.getArrayPool());
+		//覆写encode，decode处理类
+        registry.prepend(ByteBuffer.class, new MyByteBufferEncoder())
+                .prepend(InputStream.class, new MyStreamEncoder(glide.getArrayPool()))
+                /* Bitmaps */
+                .prepend(Registry.BUCKET_BITMAP, ByteBuffer.class, Bitmap.class, new MyByteDecoder(downsampler))
+                .prepend(Registry.BUCKET_BITMAP, InputStream.class, Bitmap.class, new MyStreamDecoder(downsampler, glide.getArrayPool()));
+    }    
+}
+```
+
+这是参考Glide类源码中的代码写的：
+
+```java
+Glide类
+registry
+    .append(ByteBuffer.class, new ByteBufferEncoder())
+    .append(InputStream.class, new StreamEncoder(arrayPool))
+    /* Bitmaps */
+    .append(Registry.BUCKET_BITMAP, ByteBuffer.class, Bitmap.class, byteBufferBitmapDecoder)
+    .append(Registry.BUCKET_BITMAP, InputStream.class, Bitmap.class, streamBitmapDecoder);
+```

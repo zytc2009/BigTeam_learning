@@ -234,4 +234,16 @@ registry
     /* Bitmaps */
     .append(Registry.BUCKET_BITMAP, ByteBuffer.class, Bitmap.class, byteBufferBitmapDecoder)
     .append(Registry.BUCKET_BITMAP, InputStream.class, Bitmap.class, streamBitmapDecoder);
+	/* BitmapDrawables */
+    .append(
+            Registry.BUCKET_BITMAP_DRAWABLE,
+            ByteBuffer.class,
+            BitmapDrawable.class,
+            new BitmapDrawableDecoder<>(resources, byteBufferBitmapDecoder))
+    .append(
+            Registry.BUCKET_BITMAP_DRAWABLE,
+            InputStream.class,
+            BitmapDrawable.class,
+            new BitmapDrawableDecoder<>(resources, streamBitmapDecoder))
+主要看你用的是Bitmap还是BitmapDrawable
 ```

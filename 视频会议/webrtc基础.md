@@ -297,6 +297,12 @@ ICE Candiate:
       基于IP的语音、数据、视频等业务在NGN（Next Generation Network）网络中所面临的一个实际困难就是如何有效地穿透各种NAT（Network Address Translator）/FW(Fire Wall)的问题。对此，SIP（会话初始化协议）以往的解决方法ALGs（(Application Layer Gateway Service)）、STUN、TURN等方式。
       现在有一种新的媒体会话信令穿透NAT/FW的解决方案-交互式连通建立方式ICE。它通过综合利用现有协议，以一种更有效的方式来组织会话建立过程，使之在不增加任何延迟同时比STUN等单一协议更具有健壮性、灵活性。多媒体会话信令协议是在准备建立媒体流传输的代理之间交互信息的协议，例如SIP、RTSP（real time streaming protocol）等。
 
+### webrtc的整体交互过程
+
+<img src="image\webrtc的整体交互过程.png" width="500" align="left"/>
+
+
+
 ## 加解密
 
 ### 1.基本概念
@@ -596,6 +602,210 @@ HTTP协议中有个约定：content-length字段，http的body部分的长度
 如果服务器回复http请求中没有这个字段，客户端就一直接收数据，直到服务器跟客户端的socket连接断开。
 
 http-flv直播就是利用第二个原理，服务器回复客户端请求的时候不加content-length字段，在回复了http内容之后，紧接着发送flv数据，客户端就一直接收数据了。
+
+## WebRTC核心之SDP详解、媒体协商
+
+### 1.什么是SDP
+
+    SDP(Session Description Protocol)描述会话协议，它只是一种信息格式的描述标准，本身不属于传输协议，但是可以被其他传输协议用来交换必要的信息，用于两个会话实体之间的媒体协商。
+        SDP（Session Description Protocol）是一个用来描述多媒体会话的应用层控制协议，为会话通知、会话邀请和其它形式的多媒体会话初始化等目的提供了多媒体会话描述；它是一个基于文本的协议，这样就能保证协议的可扩展性比较强，这样就使其具有广泛的应用范围；SDP 完全是一种会话描述格式 ― 它不属于传输协议 ― 它只使用不同的适当的传输协议，包括会话通知协议（SAP）、会话初始协议（SIP）、实时流协议（RTSP）、MIME 扩展协议的电子邮件以及超文本传输协议（HTTP）。SDP 不支持会话内容或媒体编码的协商，所以在流媒体中只用来描述媒体信息。媒体协商这一块要用RTSP来实现。
+会话目录用于协助多媒体会议的通告，并为会话参与者传送相关设置信息。SDP 即用于将这种信息传输到接收端。在因特网组播骨干网（Mbone）中，会话目录工具被用于通告多媒体会议，并为参与者传送会议地址和参与者所需的会议特定工具信息，这由 SDP 完成。SDP 连接好会话后，传送足够的信息给会话参与者。SDP 信息发送利用了会话通知协议（SAP），它周期性地组播通知数据包到已知组播地址和端口处。这些信息是 UDP 数据包，其中包含 SAP 协议头和文本有效载荷（text payload）。这里文本有效载荷指的是 SDP 会话描述。此外信息也可以通过电子邮件或 WWW （World Wide Web） 进行发送。SDP 文本信息包括：会话名称和意图； 会话持续时间； 构成会话的媒体； 有关接收媒体的信息（地址等）。
+
+### 2、SDP协议结构
+
+​       SDP描述由许多文本行组成，文本行的格式为<类型>=<值>，<类型>是一个字母，<值>是结构化的文本串，其格式依<类型>而定，<type> = <value>，每个SDP有一个会话级描述、多个媒体级描述。
+​       SDP的文本信息包括：
+
+会话的名称和目的 Session Description
+v = （协议版本）
+o = （所有者/创建者和会话标识符）
+s = （会话名称）
+i = * （会话信息）
+u = * （URI 描述）
+e = * （Email 地址）
+p = * （电话号码）
+c = * （连接信息 ― 如果包含在所有媒体中，则不需要该字段）
+b = * （带宽信息）
+
+会话存活时间   Time Description
+t = （会话活动时间）
+r = * （0或多次重复次数）
+构成会话的媒体(会话中包括多个媒体)
+SDP的媒体信息  Media Description
+媒体格式
+传输协议
+传输IP和端口
+媒体负载类型(VP8、VP9、H264、H265)
+m = （媒体名称和传输地址）
+i = * （媒体标题）
+c = * （连接信息 — 如果包含在会话层则该字段可选）
+b = * （带宽信息）
+k = * （加密密钥）
+a = * （0 个或多个会话属性行）
+
+### 3、SDP实例
+
+```
+v=0
+//sdp版本号，一直为0,rfc4566规定
+o=- 7017624586836067756 2 IN IP4 127.0.0.1
+//origion/owner  o=<username> <session id> <version> <network type> <address type> <unicast-address>
+//username如何没有使用-代替，7017624586836067756是整个会话的编号，2代表会话版本，如果在会话
+//过程中有改变编码之类的操作，重新生成sdp时,sess-id不变，sess-version加1
+s=-
+//会话名,必选，没有的话使用-代替
+t=0 0
+//两个值分别是会话的起始时间和结束时间，这里都是0代表没有限制
+a=group:BUNDLE audio video data
+//需要共用一个传输通道传输的媒体，如果没有这一行，音视频，数据就会分别单独用一个udp端口来发送
+a=msid-semantic: WMS h1aZ20mbQB0GSsq0YxLfJmiYWE9CBfGch97C
+//WMS是WebRTC Media Stream简称，这一行定义了本客户端支持同时传输多个流，一个流可以包括多个track,
+//一般定义了这个，后面a=ssrc这一行就会有msid,mslabel等属性
+m=audio 9 UDP/TLS/RTP/SAVPF 111 103 104 9 0 8 106 105 13 126
+//m = <media><port><transport><fmt/payload type list>
+//m=audio说明本会话包含音频，9代表音频使用端口9来传输，但是在webrtc中一现在一般不使用，如果设置为0，代表不
+//传输音频,UDP/TLS/RTP/SAVPF是表示用户来传输音频支持的协议，udp，tls,rtp代表使用udp来传输rtp包，并使用tls加密
+//SAVPF代表使用srtcp的反馈机制来控制通信过程,后台111 103 104 9 0 8 106 105 13 126表示本会话音频支持的编码，后台几行会有详细补充说明
+c=IN IP4 0.0.0.0
+//这一行表示你要用来接收或者发送音频使用的IP地址，webrtc使用ice传输，不使用这个地址
+a=rtcp:9 IN IP4 0.0.0.0
+//用来传输rtcp地地址和端口，webrtc中不使用
+a=ice-ufrag:khLS
+a=ice-pwd:cxLzteJaJBou3DspNaPsJhlQ
+//以上两行是ice协商过程中的安全验证信息
+a=fingerprint:sha-256 FA:14:42:3B:C7:97:1B:E8:AE:0C2:71:03:05:05:16:8F:B9:C7:98:E9:60:43:4B:5B:2C:28:EE:5C:8F3:17
+//以上这行是dtls协商过程中需要的认证信息
+a=setup:actpass
+//以上这行代表本客户端在dtls协商过程中，可以做客户端也可以做服务端，参考rfc4145 rfc4572
+a=mid:audio
+//在前面BUNDLE这一行中用到的媒体标识
+a=extmap:1 urn:ietf:params:rtp-hdrext:ssrc-audio-level
+//上一行指出我要在rtp头部中加入音量信息，参考 rfc6464
+a=sendrecv
+//上一行指出我是双向通信，另外几种类型是recvonly,sendonly,inactive
+a=rtcp-mux
+//上一行指出rtp,rtcp包使用同一个端口来传输
+//下面几行都是对m=audio这一行的媒体编码补充说明，指出了编码采用的编号，采样率，声道等
+a=rtpmap:111 opus/48000/2
+//可选 a=rtpmap:<fmt/payload type><encoding name>/<clock rate>[/<encodingparameters>]
+a=rtcp-fb:111 transport-cc
+//以上这行说明opus编码支持使用rtcp来控制拥塞，参考https://tools.ietf.org/html/draft-holmer-rmcat-transport-wide-cc-extensions-01
+a=fmtp:111 minptime=10;useinbandfec=1
+//可选 a=fmtp:<fmt/payload type> parameters  对rtpmap进一步说明
+//对opus编码可选的补充说明,minptime代表最小打包时长是10ms，useinbandfec=1代表使用opus编码内置fec特性
+a=rtpmap:103 ISAC/16000
+a=rtpmap:104 ISAC/32000
+a=rtpmap:9 G722/8000
+a=rtpmap:0 PCMU/8000
+a=rtpmap:8 PCMA/8000
+a=rtpmap:106 CN/32000
+a=rtpmap:105 CN/16000
+a=rtpmap:13 CN/8000
+a=rtpmap:126 telephone-event/8000
+a=ssrc:18509423 cname:sTjtznXLCNH7nbRw
+//cname用来标识一个数据源，ssrc当发生冲突时可能会发生变化，但是cname不会发生变化，也会出现在rtcp包中SDEC中，
+//用于音视频同步
+a=ssrc:18509423 msid:h1aZ20mbQB0GSsq0YxLfJmiYWE9CBfGch97C 15598a91-caf9-4fff-a28f-3082310b2b7a
+//以上这一行定义了ssrc和WebRTC中的MediaStream,AudioTrack之间的关系，msid后面第一个属性是stream-d,第二个是track-id
+a=ssrc:18509423 mslabel:h1aZ20mbQB0GSsq0YxLfJmiYWE9CBfGch97C
+a=ssrc:18509423 label:15598a91-caf9-4fff-a28f-3082310b2b7a
+m=video 9 UDP/TLS/RTP/SAVPF 100 101 107 116 117 96 97 99 98
+//参考上面m=audio,含义类似
+c=IN IP4 0.0.0.0
+a=rtcp:9 IN IP4 0.0.0.0
+a=ice-ufrag:khLS
+a=ice-pwd:cxLzteJaJBou3DspNaPsJhlQ
+a=fingerprint:sha-256 FA:14:42:3B:C7:97:1B:E8:AE:0C2:71:03:05:05:16:8F:B9:C7:98:E9:60:43:4B:5B:2C:28:EE:5C:8F3:17
+a=setup:actpass
+a=mid:video
+a=extmap:2 urn:ietf:params:rtp-hdrext:toffset
+a=extmap:3 http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time
+a=extmap:4 urn:3gpp:video-orientation
+a=extmap:5 http://www.ietf.org/id/draft-hol ... de-cc-extensions-01
+a=extmap:6 http://www.webrtc.org/experiments/rtp-hdrext/playout-delay
+a=sendrecv
+a=rtcp-mux
+a=rtcp-rsize
+a=rtpmap:100 VP8/90000
+a=rtcp-fb:100 ccm fir
+//ccm是codec control using RTCP feedback message简称，意思是支持使用rtcp反馈机制来实现编码控制，fir是Full Intra Request
+//简称，意思是接收方通知发送方发送幅完全帧过来
+a=rtcp-fb:100 nack
+//支持丢包重传，参考rfc4585
+a=rtcp-fb:100 nack pli
+//支持关键帧丢包重传,参考rfc4585
+a=rtcp-fb:100 goog-remb
+//支持使用rtcp包来控制发送方的码流
+a=rtcp-fb:100 transport-cc
+//参考上面opus
+a=rtpmap:101 VP9/90000
+a=rtcp-fb:101 ccm fir
+a=rtcp-fb:101 nack
+a=rtcp-fb:101 nack pli
+a=rtcp-fb:101 goog-remb
+a=rtcp-fb:101 transport-cc
+a=rtpmap:107 H264/90000
+a=rtcp-fb:107 ccm fir
+a=rtcp-fb:107 nack
+a=rtcp-fb:107 nack pli
+a=rtcp-fb:107 goog-remb
+a=rtcp-fb:107 transport-cc
+a=fmtp:107 level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f
+//h264编码可选的附加说明
+a=rtpmap:116 red/90000
+//fec冗余编码，一般如果sdp中有这一行的话，rtp头部负载类型就是116，否则就是各编码原生负责类型
+a=rtpmap:117 ulpfec/90000
+//支持ULP FEC，参考rfc5109
+a=rtpmap:96 rtx/90000
+a=fmtp:96 apt=100
+//以上两行是VP8编码的重传包rtp类型
+a=rtpmap:97 rtx/90000
+a=fmtp:97 apt=101
+a=rtpmap:99 rtx/90000
+a=fmtp:99 apt=107
+a=rtpmap:98 rtx/90000
+a=fmtp:98 apt=116
+a=ssrc-group:FID 3463951252 1461041037
+//在webrtc中，重传包和正常包ssrc是不同的，上一行中前一个是正常rtp包的ssrc,后一个是重传包的ssrc
+a=ssrc:3463951252 cname:sTjtznXLCNH7nbRw
+a=ssrc:3463951252 msid:h1aZ20mbQB0GSsq0YxLfJmiYWE9CBfGch97C ead4b4e9-b650-4ed5-86f8-6f5f5806346d
+a=ssrc:3463951252 mslabel:h1aZ20mbQB0GSsq0YxLfJmiYWE9CBfGch97C
+a=ssrc:3463951252 label:ead4b4e9-b650-4ed5-86f8-6f5f5806346d
+a=ssrc:1461041037 cname:sTjtznXLCNH7nbRw
+a=ssrc:1461041037 msid:h1aZ20mbQB0GSsq0YxLfJmiYWE9CBfGch97C ead4b4e9-b650-4ed5-86f8-6f5f5806346d
+a=ssrc:1461041037 mslabel:h1aZ20mbQB0GSsq0YxLfJmiYWE9CBfGch97C
+a=ssrc:1461041037 label:ead4b4e9-b650-4ed5-86f8-6f5f5806346d
+m=application 9 DTLS/SCTP 5000
+c=IN IP4 0.0.0.0
+a=ice-ufrag:khLS
+a=ice-pwd:cxLzteJaJBou3DspNaPsJhlQ
+a=fingerprint:sha-256 FA:14:42:3B:C7:97:1B:E8:AE:0C2:71:03:05:05:16:8F:B9:C7:98:E9:60:43:4B:5B:2C:28:EE:5C:8F3:17
+a=setup:actpass
+a=mid:data
+a=sctpmap:5000 webrtc-datachannel 1024
+```
+
+### 4、WebRTC中的SDP
+
+<img src="image\SDP组成.png" width="500" align="left"/>
+
+<img src="image\SDP协商过程.png" width="400" align="left"/>
+
+ 整体过程简单分析下：
+       SDP协商利用的是里请求和响应这两个模型（offer、answer）,Offerer发给Answerer的请求消息称为请求offer，内容包括媒体流类型、各个媒体流使用的编码集，以及将要用于接收媒体流的IP和端口。
+Answerer收到offer之后，回复给Offerer的消息称为响应，内容包括要使用的媒体编码，是否接收该媒体流以及告诉Offerer其用于接收媒体流的IP和端口。
+       Offer/Answer模型包括两个实体，一个是请求主体Offerer，另外一个是响应实体Answerer，两个实体只是在逻辑上进行区分，在一定条件可以转换。
+       在WebRTC连接流程中，在创建PeerConnectionA后，就会去创建一个offerSDP，并设置为localSDP。通过signaling发送 PeerB。 peerB收到peerA的SDP后，把收到的SDP设置为RemoteSDP。在设置完成后，PeerB再生成AnswerSDP，设置为localSDP，通过signaling通道发送给PeerA，PeerA收到后AnswerSDP后，设置为RemoteSDP，以上流程完成了SDP的交换。
+
+### 5、Webrtc媒体协商
+
+媒体协商是为了保证交互双方通过交换信息来保证交互的正常进行，比如A用的是H264编码，通过协商告知B，B来判断自己是否可以进行相应的数据解析来确定是否可以进行交互通信。WebRTC默认情况下使用的V8引擎。
+
+<img src="image\媒体协商过程.png" width="500" align="left"/>
+
+
+
+
 
 
 

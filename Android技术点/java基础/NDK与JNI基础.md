@@ -52,18 +52,30 @@ JNI，全称为Java Native Interface，即Java本地接口，JNI是Java调用Nat
 
 JNI下一共涉及到三个角色：C/C++代码、本地方法接口类、Java层中具体业务类。
 
-#### JNI的命名规则
+#### JNI方法命名规则(标准JNI规范)
 
-```undefined
-JNIExport jstring JNICALL Java_com_zy_test_MainActivity_testJNI( JNIEnv* env,jobject thiz ) 
-```
+**JNI实现的方法 与 Java中Native方法的映射关系** : 使用方法名进行映射, 可以使用 javah 工具进入 bin/classes 目录下执行命令, 即可生成头文件;
 
-**`jstring`** 是**返回值类型**
- **`Java_com_zy_test`** 是**包名**
- **`MainActivity`** 是**类名**
- **`stringFromJNI`** 是**方法名**
+**JNI方法参数介绍**: 
+-- 参数① : 第一个参数是JNI接口指针 JNIEnv;
+-- 参数② : 如果Native方法是非静态的, 那么第二个参数就是对Java对象的引用, 如果Native方法是静态的, 那么第二个参数就是对Java类的Class对象的引用;
+
+**JNI方法名规范** : 返回值 + Java前缀 + 全路径类名 + 方法名 + 参数① JNIEnv + 参数② jobject + 其它参数;
+-- 注意分隔符 : Java前缀 与 类名 以及类名之间的包名 和 方法名之间 使用 "_" 进行分割;
+
+**声明 非静态 方法**: 
+-- Native方法 : public int hello (String str, int i); 
+-- JNI方法: jint Java_shuliang_han_Hello_hello(JNIEnv * env, jobject **obj**, jstring str, jint i);
+
+**声明 静态 方法** : 
+-- Native方法 : public static int hello (String str, int i); 
+--JNI方法 : jint Java_shuliang_han_Hello_hello(JNIEnv * env, jobject **clazz**, jstring str, jint i);
+
+两种规范 : 以上是Java的标准JNI规范, 在Android中还有一套自定义的规范, 该规范是Android应用框架层 和 框架层交互使用的JNI规范, 依靠方法注册 映射 Native方法 和 JNI方法;
 
 其中**`JNIExport`**和**`JNICALL`**是不固定保留的关键字不要修改
+
+
 
 #### 如何实现JNI
 
@@ -290,6 +302,196 @@ jboolean isEqual = (*env)->IsSameObject(env, g_obj_ref, NULL);
 
 
 
+#### 获取 jclass 对象 ( GetObjectClass )
+
+1 . 函数原型 : 通过传入 Java 对象 ( jobject 类型变量 ) , 获取 Java 类对象 ( jclass 类型变量 )
+
+返回值 : 返回 Java 字节码 Class 对象 , 对应 C/C++ 中的 jclass 对象 ;
+参数 : 传入 Java 对象 ; ( 该对象一般是由 JNI 方法传入的 )
+
+```c++
+struct _JNIEnv {
+    /* _JNIEnv  结构体中封装了 JNINativeInterface 结构体指针 */
+    const struct JNINativeInterface* functions;
+    ...
+    // 最终 调用的 还是 JNINativeInterface 结构体中封装的 GetObjectClass方法
+    jclass GetObjectClass(jobject obj)
+    { return functions->GetObjectClass(this, obj); }
+    ...
+}
+```
+
+2 . 代码示例 :
+
+```c++
+extern "C"
+JNIEXPORT void JNICALL
+Java_kim_hsl_jni_MainActivity_jniObjectTest(JNIEnv *env, jobject instance, jobject student) {
+    //获取 Java 对应的 Class 对象
+    jclass student_class = env->GetObjectClass(student);
+	...
+}
+```
+
+#### 获取 jclass 对象 ( FindClass )
+
+函数原型 : 通过传入完整的 包名.类名 获取 Java 类对应的 C/C++ 环境下的 jclass 类型变量 ;
+
+返回值 : 返回 Java 字节码 Class 对象 , 对应 C/C++ 中的 jclass 对象 ;
+参数 : 传入 完整的 包名/类名 , 注意包名中使用 “/” 代替 “.” , 如 “kim/hsl/jni/Teacher” ;
+
+```c++
+struct _JNIEnv {
+    /* _JNIEnv  结构体中封装了 JNINativeInterface 结构体指针 */
+    const struct JNINativeInterface* functions;
+    ...
+    // 最终 调用的 还是 JNINativeInterface 结构体中封装的 FindClass 方法
+    jclass FindClass(const char* name)
+    { return functions->FindClass(this, name); }
+    ...
+}
+```
+
+2 . 代码示例 : 获取 kim.hsl.jni.Teacher 对应的 jclass 对象 ;
+
+```c++
+extern "C"
+JNIEXPORT void JNICALL
+Java_kim_hsl_jni_MainActivity_jniObjectTest(JNIEnv *env, jobject instance, jobject student) {
+    ...
+    // 获取 Teacher 类 ( 该变量需要释放 )
+    jclass class_teacher = env->FindClass("kim/hsl/jni/Teacher");
+	...
+}
+```
+
+版权声明：本文为CSDN博主「韩曙亮」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。
+原文链接：https://blog.csdn.net/shulianghan/article/details/104108556
+
+#### javap 获取函数签名 
+
+class文件目录执行**javap 命令格式 : javap -s 完整包名.类名 ;**
+
+#### 获取java对象方法 ( GetMethodID )
+
+**函数原型 :** 通过 jclass 对象 , 方法名称 , 和 方法签名 , 获取 Java 类对象对应的方法 ID 即 jmethodID 类型变量 ;
+
+返回值 : Java 类对象对应的方法 ID ( jmethodID 类型变量 )
+
+参数 :
+
+jclass clazz : 要获取的 Java 对象方法对应的 Java 类对象 ;
+const char* name : 方法名称 ;
+const char* sig : 方法签名 , 使用 javap 命令获得 ;
+
+>  jmethodID method_getAge = env->GetMethodID(student_class, "getAge" , "()I");
+
+#### 获取类静态方法 ( GetStaticMethodID )
+
+**函数原型 :** 通过 jclass 对象 , 方法名称 , 和 方法签名 , 获取 Java 类对象对应的方法 ID 即 jmethodID 类型变量 ;
+
+> jmethodID method_logInfo = env->GetStaticMethodID(student_class, "logInfo" , "(Ljava/lang/String;)V");
+
+#### 调用 Java 对象方法 ( CallXxxMethod )
+
+**函数原型** : 通过 Java 对象 , Java 方法 ID , 及根据函数签名传入的 参数列表 ( 可变参数 ) , 反射调用该 Java 对象的方法 ;
+
+**返回值** : Void , 注意这里的返回值可以是 8 种 基本数据类型 , jboolean , jbyte , jshort 等类型 , 也可以是引用类型 jobject 类型 , **只有这 10 种返回类型 , 没有其它类型 ; ( 注意 : 返回值 都是 Java 类型 )**
+
+**参数** :
+
+**jobject obj** : 要获取的 Java 对象方法对应的 Java 类对象 ;
+**jmethodID methodID** : 方法 ID ;
+… : 可变参数 , 方法的参数 ( 注意 : **参数 必须 都是 Java 类型** ) ;
+
+```c++
+所有 Java 方法调用返回值类型 :
+jobject     (*CallObjectMethod)(JNIEnv*, jobject, jmethodID, ...);
+    jobject     (*CallObjectMethodV)(JNIEnv*, jobject, jmethodID, va_list);
+    jobject     (*CallObjectMethodA)(JNIEnv*, jobject, jmethodID, const jvalue*);
+    jboolean    (*CallBooleanMethod)(JNIEnv*, jobject, jmethodID, ...);
+    jboolean    (*CallBooleanMethodV)(JNIEnv*, jobject, jmethodID, va_list);
+    jboolean    (*CallBooleanMethodA)(JNIEnv*, jobject, jmethodID, const jvalue*);
+    jbyte       (*CallByteMethod)(JNIEnv*, jobject, jmethodID, ...);
+    jbyte       (*CallByteMethodV)(JNIEnv*, jobject, jmethodID, va_list);
+    jbyte       (*CallByteMethodA)(JNIEnv*, jobject, jmethodID, const jvalue*);
+    jchar       (*CallCharMethod)(JNIEnv*, jobject, jmethodID, ...);
+    jchar       (*CallCharMethodV)(JNIEnv*, jobject, jmethodID, va_list);
+    jchar       (*CallCharMethodA)(JNIEnv*, jobject, jmethodID, const jvalue*);
+    jshort      (*CallShortMethod)(JNIEnv*, jobject, jmethodID, ...);
+    jshort      (*CallShortMethodV)(JNIEnv*, jobject, jmethodID, va_list);
+    jshort      (*CallShortMethodA)(JNIEnv*, jobject, jmethodID, const jvalue*);
+    jint        (*CallIntMethod)(JNIEnv*, jobject, jmethodID, ...);
+    jint        (*CallIntMethodV)(JNIEnv*, jobject, jmethodID, va_list);
+    jint        (*CallIntMethodA)(JNIEnv*, jobject, jmethodID, const jvalue*);
+    jlong       (*CallLongMethod)(JNIEnv*, jobject, jmethodID, ...);
+    jlong       (*CallLongMethodV)(JNIEnv*, jobject, jmethodID, va_list);
+    jlong       (*CallLongMethodA)(JNIEnv*, jobject, jmethodID, const jvalue*);
+    jfloat      (*CallFloatMethod)(JNIEnv*, jobject, jmethodID, ...);
+    jfloat      (*CallFloatMethodV)(JNIEnv*, jobject, jmethodID, va_list);
+    jfloat      (*CallFloatMethodA)(JNIEnv*, jobject, jmethodID, const jvalue*);
+    jdouble     (*CallDoubleMethod)(JNIEnv*, jobject, jmethodID, ...);
+    jdouble     (*CallDoubleMethodV)(JNIEnv*, jobject, jmethodID, va_list);
+    jdouble     (*CallDoubleMethodA)(JNIEnv*, jobject, jmethodID, const jvalue*);
+    void        (*CallVoidMethod)(JNIEnv*, jobject, jmethodID, ...);
+    void        (*CallVoidMethodV)(JNIEnv*, jobject, jmethodID, va_list);
+    void        (*CallVoidMethodA)(JNIEnv*, jobject, jmethodID, const jvalue*);
+```
+
+#### 调用 Java 类静态方法 ( CallStaticXxxMethod )
+
+> **注意 : 返回值和参数必须 都是 Java 类型 ;**
+
+函数原型 : 通过 Java 类对象 ( Class 对象 对应 C/C++ jclass 类型对象 ) , Java 方法 ID , 及根据函数签名传入的 参数列表 ( 可变参数 ) , 反射调用该 Java 对象的方法 ;
+
+返回值 : void , 注意这里的返回值可以是 8 种 基本数据类型 , jboolean , jbyte , jshort 等类型 , 也可以是引用类型 jobject 类型 , 只有这 10 种返回类型 , 没有其它类型 ; ( 注意 : 返回值 都是 Java 类型 )
+
+参数 :
+
+jobject obj : 要获取的 Java 对象方法对应的 Java 类对象 ;
+jmethodID methodID : 方法 ID ;
+… : 可变参数 , 方法的参数 ( 注意 : 参数 必须 都是 Java 类型 ) ;
+
+```c++
+所有 Java 方法调用返回值类型 :
+	jobject     (*CallStaticObjectMethod)(JNIEnv*, jclass, jmethodID, ...);
+    jobject     (*CallStaticObjectMethodV)(JNIEnv*, jclass, jmethodID, va_list);
+    jobject     (*CallStaticObjectMethodA)(JNIEnv*, jclass, jmethodID, const jvalue*);
+    jboolean    (*CallStaticBooleanMethod)(JNIEnv*, jclass, jmethodID, ...);
+    jboolean    (*CallStaticBooleanMethodV)(JNIEnv*, jclass, jmethodID,
+                        va_list);
+    jboolean    (*CallStaticBooleanMethodA)(JNIEnv*, jclass, jmethodID, const jvalue*);
+    jbyte       (*CallStaticByteMethod)(JNIEnv*, jclass, jmethodID, ...);
+    jbyte       (*CallStaticByteMethodV)(JNIEnv*, jclass, jmethodID, va_list);
+    jbyte       (*CallStaticByteMethodA)(JNIEnv*, jclass, jmethodID, const jvalue*);
+    jchar       (*CallStaticCharMethod)(JNIEnv*, jclass, jmethodID, ...);
+    jchar       (*CallStaticCharMethodV)(JNIEnv*, jclass, jmethodID, va_list);
+    jchar       (*CallStaticCharMethodA)(JNIEnv*, jclass, jmethodID, const jvalue*);
+    jshort      (*CallStaticShortMethod)(JNIEnv*, jclass, jmethodID, ...);
+    jshort      (*CallStaticShortMethodV)(JNIEnv*, jclass, jmethodID, va_list);
+    jshort      (*CallStaticShortMethodA)(JNIEnv*, jclass, jmethodID, const jvalue*);
+    jint        (*CallStaticIntMethod)(JNIEnv*, jclass, jmethodID, ...);
+    jint        (*CallStaticIntMethodV)(JNIEnv*, jclass, jmethodID, va_list);
+    jint        (*CallStaticIntMethodA)(JNIEnv*, jclass, jmethodID, const jvalue*);
+    jlong       (*CallStaticLongMethod)(JNIEnv*, jclass, jmethodID, ...);
+    jlong       (*CallStaticLongMethodV)(JNIEnv*, jclass, jmethodID, va_list);
+    jlong       (*CallStaticLongMethodA)(JNIEnv*, jclass, jmethodID, const jvalue*);
+    jfloat      (*CallStaticFloatMethod)(JNIEnv*, jclass, jmethodID, ...);
+    jfloat      (*CallStaticFloatMethodV)(JNIEnv*, jclass, jmethodID, va_list);
+    jfloat      (*CallStaticFloatMethodA)(JNIEnv*, jclass, jmethodID, const jvalue*);
+    jdouble     (*CallStaticDoubleMethod)(JNIEnv*, jclass, jmethodID, ...);
+    jdouble     (*CallStaticDoubleMethodV)(JNIEnv*, jclass, jmethodID, va_list);
+    jdouble     (*CallStaticDoubleMethodA)(JNIEnv*, jclass, jmethodID, const jvalue*);
+    void        (*CallStaticVoidMethod)(JNIEnv*, jclass, jmethodID, ...);
+    void        (*CallStaticVoidMethodV)(JNIEnv*, jclass, jmethodID, va_list);
+    void        (*CallStaticVoidMethodA)(JNIEnv*, jclass, jmethodID, const jvalue*);
+```
+
+
+
 相关文章：
 
 https://www.jianshu.com/p/87ce6f565d37
+
+https://blog.csdn.net/shulianghan/article/details/104108556
+

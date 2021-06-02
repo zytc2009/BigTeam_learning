@@ -487,6 +487,26 @@ jmethodID methodID : 方法 ID ;
     void        (*CallStaticVoidMethodA)(JNIEnv*, jclass, jmethodID, const jvalue*);
 ```
 
+#### JNI 进程间同步
+
+JNI可以使用Java对象进行线程同步
+
+- MonitorEnter函数用来锁定Java对象
+- MonitorExit函数用来释放Java对象锁
+
+```
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_zy_testjni_TestNatvie_testJNILock(JNIEnv *env, jobject instance, jobject lock) {
+    //加锁
+    env->MonitorEnter(lock);
+    //doSomething
+    LOGD("test, this is in lock");
+    //释放锁
+    env->MonitorExit(lock);
+}
+```
+
 
 
 相关文章：

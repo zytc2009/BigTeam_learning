@@ -46,10 +46,7 @@ class Solution {
         int[] dp = new int[n+1];
         dp[0] = 1;
         for(int coin:coins){
-            for(int i = 1;i<=n;i++){
-                if(i - coin < 0){
-                    continue;
-                }
+            for(int i = coin;i<=n;i++){
                 dp[i] = (dp[i] + dp[i-coin])%1000000007;
             }
         }

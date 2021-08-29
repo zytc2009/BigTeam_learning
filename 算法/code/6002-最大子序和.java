@@ -19,7 +19,7 @@ class Solution {
         int ans = nums[0];
         int sum = nums[0];
         for(int pos=1; pos < nums.length ; pos++) {
-            num = nums[pos];
+            int num = nums[pos];
             if(sum > 0) {
                 sum += num;
             } else {

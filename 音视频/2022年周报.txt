@@ -1,0 +1,283 @@
+2022/12/30
+1.解bug
+2.背景替换sdk的模糊不应该需要背景图片
+3.分享问题：部分电脑分享窗口仅支持wgc，但是wgc在我的电脑上会异常，最新的webrtc代码已经解决了这个问题，所以需要更新代码
+
+
+12/02
+1.支持android，处理onPeerLayer change
+2.RTCCore控制handler的调用线程 分支
+3.RtcCore线程模型整理
+
+11/25
+1.Layer优化问题
+3.android12 alarm权限问题
+4.线程优化，去掉锁
+5.解决bug
+
+11/18
+1.Layer优化
+2.合并win端最新代码
+3.RtcCore和libmediasoup合并
+4.添加运行状态监测，主要check阻塞问题
+5.解决bug
+
+11/11
+1.背景替换集成  
+2.解决rtccore问题：
+  不同平台兼容问题和资源释放问题
+3.win端代码同步
+4.rtm排查双连接问题
+   rtm的bind信令使用动态消息id，添加socket创建，收发和释放的日志
+ 
+11/04
+1.win端视频渲染（视频和分享） 
+2.调整layer_change 信令的广播频率 v1.3
+3.资源释放和stats数据结构调整， 数据转json
+4.会议pb增加字段
+5.log和加密移到平台层
+6.win端分享窗口获取失败分析
+
+
+10/28
+1.win端接入RtcCore项目结构
+2.会议增加banner通知
+3.consumer管理：
+  支持多sink，绑定前需要先清除之前绑定的consumer  
+  更新sink触发layerchange，可能需要发信令
+4.RtcCore核心功能联调
+5.win端流程调试(不含图像处理)
+
+10/21
+1.RtcCore核心功能开发  
+  统计数据组装, 质量上报处理, 会中探测数据  
+2.Rtc替换Rtm检测连接状态  
+3.信令重发和缓存  
+4.producer创建优化  
+  1)直接返回空id，并发起异步请求，需要区别哪个类型
+  2)得到id后，更新id，并根据状态发送resume or pause
+5.调试信息处理  
+6.添加耗时检测类  
+
+10/14
+1.RtcCore接口评审
+2.背景替换代码合并
+3.RtcCore核心功能开发
+
+09/30
+1.RtcCore重构整理
+2.VP9问题分析
+
+
+09/23
+1.代码合并到重构项目
+2.背景替换接入项目测试
+3.cpu参数整理收集
+4.OnnxRuntime封装及测试
+
+
+09/16
+1.RtcCore结构整理
+2.设备分类
+3.日志模块
+
+09/07
+1.webrtc日志，添加业务级别
+2.RtcCore接口整理
+3.日志模块支持不加密和不压缩
+
+09/02
+1.业务端接入日志模块
+2.会议增加通知
+3.质量上报增加字段
+
+08/25
+1.大小流切换
+ 信令修改，码率调整，联调，解决bug
+2.日志模块开发联调
+3.日志模块接入项目
+
+08/19
+1.翻页批量关闭consumers
+2.RTM本地超时检测优化
+3.1v1二期
+ DOWNLINK_BWE 下发的下行带宽，端上需要除以1000，换算成 kbps
+ NewConsumers通知：如果对应共享consumer的codec和header节点有下发，就用服务端的，否则复用端上的
+4.日志系统设计讨论
+ 
+08/12
+1.关键帧请求发送
+  测几组数据：查看规律
+2.call和网络探测的bug分析
+  复现步骤：发送丢包设置25%，当统计丢包在一小段时间（3-5秒）维持在25%以上
+3.网络探测问题
+4.批量关闭consumers梳理
+
+08/05
+1.网络探测设计和开发，联调
+2.RTM超时时间变更立即发送心跳包
+3.处理呼叫和视频黑屏相关bug
+
+07/30
+1.代码合并到develop：ice重连，KBps-》Kbps，质量上报增加字段 merge到develop
+2.长链接较慢的问题，梳理 
+3.win端资源释放处理
+4.RTM优化：线程处理，网络连接ban优化，增加控制长连接超时时间接口
+5.呼叫二期bug
+
+1.网络探测设计和开发
+2.弱网环境，画面长时间卡顿、黑屏的问题
+
+07/22
+1.ice重连 
+2.KBps-》Kbps，质量上报增加字段  
+3.RTM替换websocket提测
+4.Bug处理
+
+07/08
+本周：
+1.CallSdk多端联调和解决bug
+2.日志模块优化
+3.RTM替换Websocket讨论，开发
+4.Call的cancel支持批量用户
+5.1v1呼叫合并
+
+下周：
+1.RTM替换Websocket联调
+2.媒体信令模块拆分
+3.日志模块设计和开发
+4.RTC线程模型优化
+
+
+07/01：
+1.CallSdk多端联调  
+2.梳理接收端关键帧请求的逻辑，在相关触发点补上日志
+
+06/02
+1.CallSdk联调  
+2.邀请信令时间差消除
+3.铃声选择，统一在底层处理
+4.配合分析问题，解决bug
+
+
+05/27
+1.CallSdk开发自测，呼叫的数据拆分
+2.信令缓存和优化
+3.升级Mars
+4.呼叫和会议信令增加userAttr字段
+5.优化log格式
+
+
+05/20
+1.CallSdk开发
+状态管理，铃声处理，多端处理， 时间同步和超时配置
+2.通话时长处理
+
+
+05/13
+1.呼叫流程梳理
+2.呼叫流程讨论
+3.CallSDK接口设计
+
+
+05/06
+1.1包1密联调
+2.数据大小端处理
+3.呼叫流程梳理
+
+
+04/29
+1.meeting增加通知
+2.ssl证书校验和连接失败的错误处理
+3.1包1密秘钥生成和扩展
+4.1包1密秘钥数据加解密
+
+
+04/22
+1.batchCosume验证
+2.rtmsdk支持传ssl证书数据
+3.ssl联调
+4.呼叫流程讨论
+5.一包一密算法需求
+
+
+04/15
+1.整理webrtc升级日志
+2.白板需求修改 
+3.分析呼叫和会议问题
+4.Qos上报整理
+
+04/02
+1.长连接支持push的bind和unbind
+2.webrtc目前用的是M92分支，合并最新的修改M97
+ 都是小的修改，M93, 94，99 修改的bug较多，M95， 96，97， 98 修改的bug较少 
+ build/config/compiler/Build.gn C++17 
+ M96 4664 
+ M97 4692  
+ M99 4844  
+3.呼叫invite信令增加caller信息
+4.meeting增加JOINING_NOTIFY
+5.定位分析华为鸿蒙开启VPN，不能正常连接问题
+  TCP请求发给服务器了，但是服务器的ack，应用层收不到，应该是系统拦截了
+  vpn规则问题，估计是鸿蒙手机一旦开启vpn，网络数据就会受vpn影响
+
+
+03/25
+1.长连接支持tls，添加证书和脚本
+2.升级mediasoupclient，支持新老版本通话
+3.目录调整,可以支持切换不同仓库的代码
+
+03/18
+1.mars支持多连接调研
+2.数据签名跨平台支持
+3.升级mediasoupclient，定位新老版本无法通话问题，发现协商后不支持h264
+  原因是profile-level-id 不一致
+  代码分析：
+   // 这行代码执行前打印的，之后后结果也打印了，这个方法中做的匹配
+  this->extendedRtpCapabilities =
+      ortc::getExtendedRtpCapabilities(nativeRtpCapabilities, routerRtpCapabilities); 
+  最终跟踪到执行matchCodecs的时候出问题的
+  
+  webrtc源码:
+  bool H264IsSameProfile(const SdpVideoFormat::Parameters& params1,
+                                  const SdpVideoFormat::Parameters& params2);
+	高8位和中8位都得匹配上，低八位是level	   
+						
+
+03/11
+1.核心日志统计和上报sdk
+2.RtmSdk问题定位和排查
+3.Qos数据展示
+ (Consume probatorConsumer 1234u)
+
+03.04
+1.发送呼叫状态和用户Id，join增加response
+2.sdk底层统一处理callType
+3.所有参数设置默认值
+4.disconnect的时候，销毁Mars，connect的时候创建流程优化
+5.呼叫增加leave和close方法
+6.关键事件梳理
+
+02.22
+1.呼叫状态转换  done
+4.会议邀请超时策略 done
+
+02.16
+1.呼叫超时检测
+2.meeting消息增加temp字段，增加邀请通知
+3.呼叫超时检测
+4.IM SDK联调
+5.呼叫invite信令增加devType，支持指定设备呼叫
+
+02.11
+1.呼叫容错：连接中不处理网络变化和再次连接，避免重复bind
+2.IM测试demo
+3.IM消息结果调整和解析处理
+
+02.08
+1.android 日志文件路径问题  更换fstream为FILE
+
+01.05
+1.会议sdk   done  
+2.IM SDK    待联调
+3.白板Sdk  done

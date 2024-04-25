@@ -1,5 +1,3 @@
-
-
 # 知识库整理
 
 ## 一、管理文档
@@ -81,36 +79,3 @@
 
 ​       还未整理完的资料
 
-
-
-
-
-------
-
-### [点击这里，加入我们](关于我们/关于我们.md)
-
-技术交流群：**你要默默努力，然后悄悄拔尖。**
-
-#### QQ群
-
-​	android技术交流：198581062
-
-​	人工智能：278253494
-
-#### 微信群
-
-> **微信群如果不能扫码加入，想进微信群的朋友们，加我微信拉你进群。**
-
- <img src="关于我们/微信群.jpg" width="300" alt="图片名称"/>
-
-
-
-### License
-
-Copyright 2018 BigAndroid & zytc
-
-Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
-
-<http://www.apache.org/licenses/LICENSE-2.0>
-
-Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.

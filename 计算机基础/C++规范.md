@@ -61,21 +61,20 @@ webrtc，
 
 #### 7.枚举命名
 
-​	枚举的命名应当和宏 一致:   ENUM_NAME.
-​    枚举优先使用类型枚举
+枚举的命名应当和宏 一致:   ENUM_NAME.
+枚举优先使用类型枚举
 
 ```c++
-enum class AlternateUrlTableErrors 
-{
-    OK = 0,
-    OUT_OF_MEMORY = 1,
-    MALFORMED_INPUT = 2,
+k开头后面使用大驼峰
+enum class H264Profile {
+  kProfileBaseline,
+  kProfileMain,
 };
 ```
 
 #### 8.宏命名
 
-​	全部大写, 使用下划线。 尽量不要使用宏。用const代替
+全部大写, 使用下划线。 尽量不要使用宏。用const代替
 
 ```c++
 #define ROUND(x) ...
@@ -84,13 +83,13 @@ enum class AlternateUrlTableErrors
 
 #### 9.接口类
 
-​	以 `Interface` 为后缀 .
+以 `Interface` 为后缀 (强制).
 
 ### 注释规范
 
 // 或 /* */ 都可以;  但 // 更 常用. 
 
-​	文件头的版权说明用/* */ ， 文中注释一般都是//
+文件头的版权说明用/* */ ， 文中注释一般都是//
 
 **TODO**：
 
@@ -98,7 +97,7 @@ enum class AlternateUrlTableErrors
 
  **DEPRECATED**
 
-​	通过弃用注释（`DEPRECATED` comments）以标记某接口点已弃用.
+通过弃用注释（`DEPRECATED` comments）以标记某接口点已弃用.
 
 
 
@@ -202,8 +201,8 @@ public:
 
 ```c++
 //[=]捕获外部所有变量，并作为副本在函数中使用 
-//[&]捕获外部所有变量，并作为引用在函数体中使用，直接跨线程取，会出现数据异常 
-//也可以传递变量 
+//[&]捕获外部所有变量，并作为引用在函数体中使用，如果跨线程取，会出现数据异常 
+//也可以直接传递变量 
 void stateChanged(const std::string &sdkId)
 {    
     listenerPool->enqueue([=](){        
@@ -214,4 +213,5 @@ void stateChanged(const std::string &sdkId)
         cout<<sdkId.c_str();    
     }); 
 }
+//注意：除非特殊情况，一般没有返回值, 不要出现return xxx;
 ```

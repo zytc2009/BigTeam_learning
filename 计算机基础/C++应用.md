@@ -23,7 +23,7 @@ words.erase(iter, std::end(vector));//移除末尾空串
 vector.erase(remove(vector.begin(), vector.end(), 3) /*,vector.end()*/);
 
 //map遍历
-map<int,string*>::iterator it;
+std::map<int,string*>::iterator it;
 for(it=m.begin();it!=m.end();)
 {
         cout<<"key: "<<it->first <<" value: "<<*it->second<<endl;
@@ -34,7 +34,8 @@ for(it=m.begin();it!=m.end();)
         delete it->second;
         m.erase(it++);//删除后，移向下一个
 }
-
+if (m.find(2) != m.end()) {//查找
+}
 //list
 std::list<std::string> names {"Jane","Jim", "Jules", "July", "July"};
 names.emplace_back("Ann");
@@ -62,8 +63,9 @@ deque 容器中存储元素并不能保证所有元素都存储到连续的内�
 ```c++
 vector<int> v1;
 for(int i=0;i<5;i++)//创建道具v1并给其插入元素，为之后验证服务
-v1.push_back(i+1);
-  
+	v1.push_back(i+1);
+std::vector<std::string> d2 = v1;//基本数据，直接赋值
+
 vector<int> v3;
 v3.assign(v1.begin()+1,v1.end()-1);//赋值方法2：区间数据拷贝赋值
 
@@ -138,7 +140,7 @@ std::unique_lock<std::mutex> lock(m_Mutex);
 
 ### 智能指针转换：
 
-```
+```c++
 1、std::static_pointer_cast()：当指针是智能指针时候，向上转换（子类转父类），用static_cast 则转换不了，此时需要使用static_pointer_cast。
 
 2、std::dynamic_pointer_cast()：当指针是智能指针时候，向下转换，用dynamic_cast 则转换不了，此时需要使用dynamic_pointer_cast。
@@ -146,9 +148,11 @@ std::unique_lock<std::mutex> lock(m_Mutex);
 3、std::const_pointer_cast()：功能与std::const_cast()类似
 
 4、std::reinterpret_pointer_cast()：功能与std::reinterpret_cast()类似
+  std::shared_ptr<I420Buffer> raw_buffer =
+        std::reinterpret_pointer_cast<I420Buffer>(existing_buffer);
 ```
 
-### 不同类型转换
+### 不同类对象转换
 
 ```c++
 class AbstractClassA {

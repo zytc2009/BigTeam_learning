@@ -167,11 +167,19 @@ int *p = new int(1);
 
 #### 13、sizeof与strlen对比 
 
+
+
 #### 14、指针与引用的区别 
+
+
 
 #### 15、野指针产生与避免 
 
-#### 16、多态：动态多态、静态多态 -
+
+
+#### 16、多态：动态多态、静态多态 
+
+
 
 #### 17、虚函数实现动态多态的原理、虚函数与纯虚函数的区别 
 
@@ -431,7 +439,7 @@ int b  = const_cast<int>(a); //编译报错
 
 #### 25、四种智能指针及底层实现：auto_ptr、unique_ptr、shared_ptr、weak_ptr 
 
-```
+```c++
 share_ptr<int> sp(new int(10));
 weak_ptr<int> wp(sp);
 if(!wp.expired()){
